@@ -9,7 +9,7 @@ export const Icons = {
   spinner: Loader2,
 }
 
-export const Spinner = ({ ...props }: LucideProps) => (
+export const Spinner = ({ ...props }: typeof LucideProps) => (
   <Icons.spinner className="h-4 w-4 animate-spin" {...props} />
 )
 

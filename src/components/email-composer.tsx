@@ -36,7 +36,7 @@ interface Email {
   timestamp: string
 }
 
-interface EmailComposerProps {
+export interface EmailComposerProps {
   isOpen: boolean
   onClose: () => void
   to?: string

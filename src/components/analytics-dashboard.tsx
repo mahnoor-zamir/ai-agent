@@ -133,16 +133,16 @@ export function AnalyticsDashboard() {
     if (data.length < 2) return '0.0'
     const lastWeek = data.slice(-7)
     const previousWeek = data.slice(-14, -7)
-    const lastWeekTotal = lastWeek.reduce((sum, day) => sum + day[metric], 0)
-    const previousWeekTotal = previousWeek.reduce((sum, day) => sum + day[metric], 0)
+    const lastWeekTotal = lastWeek.reduce((sum, day) => sum + Number(day[metric]), 0);
+    const previousWeekTotal = previousWeek.reduce((sum, day) => sum + Number(day[metric]), 0);    
     const change = ((lastWeekTotal - previousWeekTotal) / previousWeekTotal) * 100
     return change.toFixed(1)
   }
 
   const keyMetrics = [
-    { title: "Total Emails Sent", value: totalEmails, icon: Mail, change: calculateChange('emails'), trend: calculateChange('emails') > 0 ? "up" : "down" },
-    { title: "Tours Booked", value: totalToursBooked, icon: Calendar, change: calculateChange('toursBooked'), trend: calculateChange('toursBooked') > 0 ? "up" : "down" },
-    { title: "Leads Handled by AI", value: `${(totalLeadsHandledByAI / totalLeads * 100).toFixed(1)}%`, icon: Percent, change: calculateChange('leadsHandledByAI'), trend: calculateChange('leadsHandledByAI') > 0 ? "up" : "down" },
+    { title: "Total Emails Sent", value: totalEmails, icon: Mail, change: calculateChange('emails'), trend: Number(calculateChange('emails')) > 0 ? "up" : "down" },
+    { title: "Tours Booked", value: totalToursBooked, icon: Calendar, change: calculateChange('toursBooked'), trend: Number(calculateChange('toursBooked')) > 0 ? "up" : "down"  },
+    { title: "Leads Handled by AI", value: `${(totalLeadsHandledByAI / totalLeads * 100).toFixed(1)}%`, icon: Percent, change: calculateChange('leadsHandledByAI'), trend: Number(calculateChange('leadsHandledByAI')) > 0 ? "up" : "down"},
   ]
 
   const engagementMetrics = [
@@ -242,10 +242,11 @@ export function AnalyticsDashboard() {
               selected={customDateRange}
               onSelect={(range) => {
                 if (range?.from && range?.to) {
-                  setCustomDateRange(range)
-                  setDateRange(range)
+                    setCustomDateRange({ from: range.from, to: range.to }); // Explicitly ensure types match
+                    setDateRange({ from: range.from, to: range.to });
                 }
-              }}
+            }}
+            
               numberOfMonths={2}
             />
           </PopoverContent>

@@ -17,10 +17,10 @@ export default async function EmailAnalytics() {
         <AIAgentToggle />
       </div>
       <Tabs defaultValue="analytics" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="conversations">Conversations</TabsTrigger>
-          <TabsTrigger value="knowledgebase">Knowledgebase</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 bg-gray-100 text-gray">
+          <TabsTrigger className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-semibold " value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-semibold" value="conversations">Conversations</TabsTrigger>
+          <TabsTrigger className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-semibold" value="knowledgebase">Knowledgebase</TabsTrigger>
         </TabsList>
         <TabsContent value="analytics">
           <ErrorBoundary fallback={<div>Something went wrong in the Analytics Dashboard.</div>}>

@@ -1,0 +1,104 @@
+/* Calendar styles */
+.rbc-calendar {
+    font-family: inherit;
+  }
+  
+  .rbc-header {
+    padding: 10px;
+    font-weight: bold;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .rbc-month-view {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .rbc-day-bg {
+    background-color: var(--background);
+  }
+  
+  .rbc-off-range-bg {
+    background-color: var(--muted);
+  }
+  
+  .rbc-today {
+    background-color: var(--accent);
+  }
+  
+  .rbc-event {
+    background-color: var(--primary);
+    border: none;
+    border-radius: 4px;
+    color: var(--primary-foreground);
+    padding: 2px 5px;
+  }
+  
+  .rbc-event-content {
+    font-size: 0.875rem;
+  }
+  
+  .holiday-cell {
+    background-color: var(--holiday-bg);
+    color: var(--holiday-color);
+  }
+  
+  .rbc-month-row + .rbc-month-row {
+    border-top: 1px solid var(--border);
+  }
+  
+  .rbc-day-bg + .rbc-day-bg {
+    border-left: 1px solid var(--border);
+  }
+  
+  .rbc-month-view .rbc-header + .rbc-header {
+    border-left: 1px solid var(--border);
+  }
+  
+  .rbc-date-cell {
+    padding: 4px;
+    text-align: center;
+  }
+  
+  .rbc-date-cell > a {
+    font-weight: bold;
+    color: var(--foreground);
+  }
+  
+  .rbc-row-segment {
+    padding: 2px 4px;
+  }
+  
+  .rbc-event {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+  
+  .rbc-show-more {
+    color: var(--primary);
+    font-weight: bold;
+  }
+  
+  .rbc-addons-dnd .rbc-addons-dnd-resizable-month-event {
+    position: relative;
+  }
+  
+  .rbc-addons-dnd .rbc-addons-dnd-resizable-month-event .rbc-addons-dnd-resize-month-event-anchor {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 0;
+    bottom: 0;
+    margin: auto 0;
+  }
+  
+  .rbc-addons-dnd .rbc-addons-dnd-resizable-month-event .rbc-addons-dnd-resize-month-event-anchor-left {
+    left: 0;
+  }
+  
+  .rbc-addons-dnd .rbc-addons-dnd-resizable-month-event .rbc-addons-dnd-resize-month-event-anchor-right {
+    right: 0;
+  }
+  
+  

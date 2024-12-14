@@ -1,8 +1,9 @@
 "use client"
+
 import { useState, useEffect } from 'react'
+import { format, subDays } from 'date-fns'
 import { Mail, MailCheck, Users, Clock, Calendar, UserCheck, MessageSquare, Timer, MailQuestion, Percent, TrendingUp, TrendingDown, ChevronDown } from 'lucide-react'
 import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, Bar, BarChart, Tooltip, Legend, ComposedChart } from "recharts"
-import { format, subDays, subWeeks, subMonths, subYears, startOfWeek, startOfMonth, startOfYear, endOfWeek, endOfMonth, endOfYear } from 'date-fns'
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,6 +32,7 @@ import {
 } from "@/components/ui/popover"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
+import { MetricDetailsSlider } from "@/components/metric-details-slider"
 
 const chartColors = {
   toursBooked: "hsl(var(--primary))",
@@ -98,6 +100,7 @@ export function AnalyticsDashboard() {
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined)
   const [data, setData] = useState<ReturnType<typeof generateDummyData>>([])
   const leads = generateDummyLeads(50)  // Generate 50 dummy leads
+  const [openSlider, setOpenSlider] = useState<string | null>(null);
 
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null)
 
@@ -133,16 +136,67 @@ export function AnalyticsDashboard() {
     if (data.length < 2) return '0.0'
     const lastWeek = data.slice(-7)
     const previousWeek = data.slice(-14, -7)
-    const lastWeekTotal = lastWeek.reduce((sum, day) => sum + Number(day[metric]), 0);
-    const previousWeekTotal = previousWeek.reduce((sum, day) => sum + Number(day[metric]), 0);    
+    const lastWeekTotal = lastWeek.reduce((sum, day) => sum + day[metric], 0)
+    const previousWeekTotal = previousWeek.reduce((sum, day) => sum + day[metric], 0)
     const change = ((lastWeekTotal - previousWeekTotal) / previousWeekTotal) * 100
     return change.toFixed(1)
   }
 
   const keyMetrics = [
-    { title: "Total Emails Sent", value: totalEmails, icon: Mail, change: calculateChange('emails'), trend: Number(calculateChange('emails')) > 0 ? "up" : "down" },
-    { title: "Tours Booked", value: totalToursBooked, icon: Calendar, change: calculateChange('toursBooked'), trend: Number(calculateChange('toursBooked')) > 0 ? "up" : "down"  },
-    { title: "Leads Handled by AI", value: `${(totalLeadsHandledByAI / totalLeads * 100).toFixed(1)}%`, icon: Percent, change: calculateChange('leadsHandledByAI'), trend: Number(calculateChange('leadsHandledByAI')) > 0 ? "up" : "down"},
+    {
+      title: "Total Emails Sent",
+      value: totalEmails,
+      icon: Mail,
+      change: calculateChange('emails'),
+      trend: calculateChange('emails') > 0 ? "up" : "down",
+      data: [
+        { name: "John Doe", dateInquired: "2023-05-10T10:30:00Z", emailsSent: 5 },
+        { name: "Jane Smith", dateInquired: "2023-05-10T11:15:00Z", emailsSent: 3 },
+        { name: "Alice Johnson", dateInquired: "2023-05-11T09:00:00Z", emailsSent: 7 },
+        // Add more data as needed...
+      ],
+      columns: [
+        { key: "name", label: "Name" },
+        { key: "dateInquired", label: "Date Inquired" },
+        { key: "emailsSent", label: "Emails Sent" },
+      ],
+    },
+    {
+      title: "Tours Booked",
+      value: totalToursBooked,
+      icon: Calendar,
+      change: calculateChange('toursBooked'),
+      trend: calculateChange('toursBooked') > 0 ? "up" : "down",
+      data: [
+        { name: "Eva Green", dateInquired: "2023-05-12T14:00:00Z", emailsSent: 4 },
+        { name: "Frank Lee", dateInquired: "2023-05-13T10:30:00Z", emailsSent: 6 },
+        { name: "Grace Chen", dateInquired: "2023-05-14T11:45:00Z", emailsSent: 5 },
+        // Add more data as needed...
+      ],
+      columns: [
+        { key: "name", label: "Name" },
+        { key: "dateInquired", label: "Date Inquired" },
+        { key: "emailsSent", label: "Emails Sent" },
+      ],
+    },
+    {
+      title: "Leads Handled by AI",
+      value: `${(totalLeadsHandledByAI / totalLeads * 100).toFixed(1)}%`,
+      icon: Percent,
+      change: calculateChange('leadsHandledByAI'),
+      trend: calculateChange('leadsHandledByAI') > 0 ? "up" : "down",
+      data: [
+        { name: "Henry Wilson", dateInquired: "2023-05-15T09:15:00Z", emailsSent: 3 },
+        { name: "Ivy Taylor", dateInquired: "2023-05-16T13:30:00Z", emailsSent: 5 },
+        { name: "Jack Robinson", dateInquired: "2023-05-17T11:00:00Z", emailsSent: 4 },
+        // Add more data as needed...
+      ],
+      columns: [
+        { key: "name", label: "Name" },
+        { key: "dateInquired", label: "Date Inquired" },
+        { key: "emailsSent", label: "Emails Sent" },
+      ],
+    },
   ]
 
   const engagementMetrics = [
@@ -169,32 +223,26 @@ export function AnalyticsDashboard() {
         from = today
         break
       case 'this-week':
-        from = startOfWeek(today)
-        to = endOfWeek(today)
+        from = subDays(today, 7)
         break
       case 'last-week':
-        from = startOfWeek(subWeeks(today, 1))
-        to = endOfWeek(subWeeks(today, 1))
+        from = subDays(today, 14)
+        to = subDays(today, 7)
         break
       case 'last-month':
-        from = startOfMonth(subMonths(today, 1))
-        to = endOfMonth(subMonths(today, 1))
+        from = subDays(today, 30)
         break
       case 'last-quarter':
-        from = subMonths(today, 3)
+        from = subDays(today, 90)
         break
       case 'last-year':
-        from = subYears(today, 1)
+        from = subDays(today, 365)
         break
       case 'month-to-date':
-        from = startOfMonth(today)
+        from = new Date(today.getFullYear(), today.getMonth(), 1)
         break
       case 'year-to-date':
-        from = startOfYear(today)
-        break
-      case 'this-year':
-        from = startOfYear(today)
-        to = endOfYear(today)
+        from = new Date(today.getFullYear(), 0, 1)
         break
       case 'custom':
         setCustomDateRange({ from: subDays(today, 7), to: today })
@@ -207,7 +255,7 @@ export function AnalyticsDashboard() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 content-container">
       <Select onValueChange={handleDateRangeChange}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Select date range" />
@@ -221,7 +269,6 @@ export function AnalyticsDashboard() {
           <SelectItem value="last-year">Last Year</SelectItem>
           <SelectItem value="month-to-date">Month to Date</SelectItem>
           <SelectItem value="year-to-date">Year to Date</SelectItem>
-          <SelectItem value="this-year">This Year</SelectItem>
           <SelectItem value="custom">Custom Date Range</SelectItem>
         </SelectContent>
       </Select>
@@ -242,11 +289,10 @@ export function AnalyticsDashboard() {
               selected={customDateRange}
               onSelect={(range) => {
                 if (range?.from && range?.to) {
-                    setCustomDateRange({ from: range.from, to: range.to }); // Explicitly ensure types match
-                    setDateRange({ from: range.from, to: range.to });
+                  setCustomDateRange(range)
+                  setDateRange(range)
                 }
-            }}
-            
+              }}
               numberOfMonths={2}
             />
           </PopoverContent>
@@ -259,39 +305,38 @@ export function AnalyticsDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
-            {keyMetrics && keyMetrics.map((metric, index) => (
-              <Sheet key={index}>
-                <SheetTrigger asChild>
-                  <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
-                    <CardContent className="flex flex-row items-center justify-between p-4">
-                      <div className="flex flex-col space-y-1">
-                        <span className="text-sm font-medium text-muted-foreground">{metric.title}</span>
-                        <span className="text-2xl font-bold">{metric.value}</span>
-                        <span className={`text-sm font-medium ${metric.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                          {metric.change}%
-                          {metric.trend === 'up' ? <TrendingUp className="inline ml-1 w-4 h-4" /> : <TrendingDown className="inline ml-1 w-4 h-4" />}
-                        </span>
-                      </div>
-                      <metric.icon className="w-8 h-8 text-muted-foreground" />
-                    </CardContent>
-                  </Card>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-full max-w-full sm:max-w-full">
-                  <SheetHeader>
-                    <SheetTitle>{metric.title} Details</SheetTitle>
-                    <SheetDescription>
-                      Detailed information about {metric.title.toLowerCase()}
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="mt-6">
-                    <LeadTable leads={leads} title={metric.title} />
-                  </div>
-                </SheetContent>
-              </Sheet>
+            {keyMetrics.map((metric) => (
+              <React.Fragment key={metric.title}>
+                <Card
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => setOpenSlider(metric.title)}
+                >
+                  <CardContent className="flex flex-row items-center justify-between p-4">
+                    <div className="flex flex-col space-y-1">
+                      <span className="text-sm font-medium text-muted-foreground">{metric.title}</span>
+                      <span className="text-2xl font-bold">{metric.value}</span>
+                      <span className={`text-xs font-medium ${metric.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                        {metric.change}%
+                        {metric.trend === 'up' ? <TrendingUp className="inline ml-1 w-4 h-4" /> : <TrendingDown className="inline ml-1 w-4 h-4" />}
+                      </span>
+                    </div>
+                    <metric.icon className="w-8 h-8 text-muted-foreground" />
+                  </CardContent>
+                </Card>
+                <MetricDetailsSlider
+                  isOpen={openSlider === metric.title}
+                  onClose={() => setOpenSlider(null)}
+                  title={metric.title}
+                  description={`Detailed information about ${metric.title.toLowerCase()}`}
+                  data={metric.data}
+                  columns={metric.columns}
+                />
+              </React.Fragment>
             ))}
           </div>
         </CardContent>
       </Card>
+
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>

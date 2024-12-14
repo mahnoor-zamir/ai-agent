@@ -1,5 +1,6 @@
-"use client"
-import { useState } from 'react'
+"use client";
+
+import { useState, useEffect } from 'react'
 import { Star, Paperclip, MoreHorizontal, Archive, Trash2, AlertOctagon, Tag, Search, Mail, Reply, ReplyAll, Forward, RefreshCcw } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 
@@ -12,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { EmailComposer, EmailComposerProps } from "@/components/email-composer"
+import { EmailComposer } from "@/components/email-composer"
 import { ConversationThread } from "@/components/conversation-thread"
 import { exportToExcel } from "@/utils/excel-export"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -115,7 +116,7 @@ const conversations: Conversation[] = [
       },
     ],
   },
-]
+].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
 function formatTimestamp(timestamp: string): string {
   const date = new Date(timestamp)
@@ -190,9 +191,15 @@ export function ConversationsTable() {
     }
   }
 
+  useEffect(() => {
+    if (conversations.length > 0) {
+      setSelectedEmail(conversations[0]);
+    }
+  }, []);
+
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-background">
-      <div className="w-1/3 border-r flex flex-col">
+      <div className="w-80 border-r flex flex-col">
         <div className="p-4 border-b">
           <div className="flex items-center space-x-2 mb-4">
             <Button onClick={() => {
@@ -240,7 +247,7 @@ export function ConversationsTable() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium truncate">{conversation.sender}</p>
-                      <span className="text-xs text-muted-foreground">{format(new Date(conversation.timestamp), 'MMM d')}</span>
+                      <span className="text-xs text-muted-foreground">{format(new Date(conversation.timestamp), 'MMM d, yyyy')}</span>
                     </div>
                     <h4 className="text-sm font-semibold truncate">{conversation.subject}</h4>
                     <p className="text-xs text-muted-foreground truncate">{conversation.preview}</p>

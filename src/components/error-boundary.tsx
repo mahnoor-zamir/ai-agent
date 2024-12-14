@@ -1,35 +1,38 @@
-'use client'
+"use client";
 
-import { useState, useEffect, ReactNode } from 'react'
+import React, { ErrorInfo, ReactNode } from 'react'
 
 interface ErrorBoundaryProps {
   children: ReactNode
   fallback: ReactNode
 }
 
-const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({ children, fallback }) => {
-  const [hasError, setHasError] = useState(false)
+interface ErrorBoundaryState {
+  hasError: boolean
+}
 
-  useEffect(() => {
-    const handleError = (error: Error) => {
-      setHasError(true)
-      console.error("Uncaught error:", error)
-    }
-
-    // Attaching the global error handler
-    window.addEventListener('error', (event) => handleError(event.error))
-    
-    return () => {
-      // Cleanup the error listener
-      window.removeEventListener('error', (event) => handleError(event.error))
-    }
-  }, [])
-
-  if (hasError) {
-    return <>{fallback}</>
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props)
+    this.state = { hasError: false }
   }
 
-  return <>{children}</>
+  static getDerivedStateFromError(_: Error): ErrorBoundaryState {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Uncaught error:", error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback
+    }
+
+    return this.props.children
+  }
 }
 
 export default ErrorBoundary
+

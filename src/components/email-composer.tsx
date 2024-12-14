@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Bold, Italic, Underline, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, Paperclip, Send, ChevronDown } from 'lucide-react'
+import { Bold, Italic, Underline, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, Paperclip, Send, ChevronDown, Plus } from 'lucide-react'
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,6 +27,13 @@ import {
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ColorPicker } from "./color-picker"
+import { TemplateModal } from "./template-modal"
+
+interface Template {
+  id: string;
+  name: string;
+  content: string;
+}
 
 interface Email {
   id: string
@@ -36,7 +43,7 @@ interface Email {
   timestamp: string
 }
 
-export interface EmailComposerProps {
+interface EmailComposerProps {
   isOpen: boolean
   onClose: () => void
   to?: string
@@ -54,6 +61,13 @@ export function EmailComposer({ isOpen, onClose, to, replyTo, subject, mode = 'n
   const [body, setBody] = useState('')
   const [fontColor, setFontColor] = useState('#000000')
   const [fontFamily, setFontFamily] = useState('Arial, sans-serif')
+  const [templates, setTemplates] = useState<Template[]>([
+    { id: '1', name: 'Welcome Template', content: 'Welcome to our platform! We\'re excited to have you on board.' },
+    { id: '2', name: 'Follow-up Template', content: 'I hope this email finds you well. I wanted to follow up on our previous conversation.' },
+  ])
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
+
 
   useEffect(() => {
     if (mode === 'reply' || mode === 'replyAll') {
@@ -73,6 +87,7 @@ export function EmailComposer({ isOpen, onClose, to, replyTo, subject, mode = 'n
     console.log('Sending email:', { to: toField, cc, bcc, subject: emailSubject, body, fontColor, fontFamily })
     onClose()
   }
+
 
   const formatButton = (icon: React.ReactNode, label: string, action: () => void) => (
     <TooltipProvider>
@@ -144,6 +159,46 @@ export function EmailComposer({ isOpen, onClose, to, replyTo, subject, mode = 'n
                 </Avatar>
                 <span className="text-sm">{mode === 'new' ? 'Me' : replyTo}</span>
               </div>
+            </div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1 mr-4">
+                <Select
+                  value={selectedTemplate}
+                  onValueChange={(value) => {
+                    const template = templates.find(t => t.id === value);
+                    if (template) {
+                      setBody(template.content);
+                      setSelectedTemplate(value);
+                    } else {
+                      setBody("");
+                      setSelectedTemplate(null);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a template" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No template</SelectItem>
+                    {templates.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>{template.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSelectedTemplate("");
+                  setBody("");
+                }}
+                className="mr-2"
+              >
+                Clear
+              </Button>
+              <Button variant="outline" onClick={() => setIsTemplateModalOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Create Template
+              </Button>
             </div>
           </div>
           <div className="border rounded-md flex-grow flex flex-col">
@@ -226,6 +281,15 @@ export function EmailComposer({ isOpen, onClose, to, replyTo, subject, mode = 'n
           </TooltipProvider>
         </div>
       </DialogContent>
+      <TemplateModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+        onSave={(newTemplate) => {
+          const updatedTemplates = [...templates, { ...newTemplate, id: Date.now().toString() }];
+          setTemplates(updatedTemplates);
+          setIsTemplateModalOpen(false);
+        }}
+      />
     </Dialog>
   )
 }

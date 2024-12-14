@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { format, subDays } from 'date-fns'
 import { Mail, MailCheck, Users, Clock, Calendar, UserCheck, MessageSquare, Timer, MailQuestion, Percent, TrendingUp, TrendingDown, ChevronDown } from 'lucide-react'
 import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, Bar, BarChart, Tooltip, Legend, ComposedChart } from "recharts"
@@ -136,8 +136,10 @@ export function AnalyticsDashboard() {
     if (data.length < 2) return '0.0'
     const lastWeek = data.slice(-7)
     const previousWeek = data.slice(-14, -7)
-    const lastWeekTotal = lastWeek.reduce((sum, day) => sum + day[metric], 0)
-    const previousWeekTotal = previousWeek.reduce((sum, day) => sum + day[metric], 0)
+    
+    const lastWeekTotal = lastWeek.reduce((sum, day) => sum + Number(day[metric]), 0)
+    const previousWeekTotal = previousWeek.reduce((sum, day) => sum + Number(day[metric]), 0)
+    
     const change = ((lastWeekTotal - previousWeekTotal) / previousWeekTotal) * 100
     return change.toFixed(1)
   }
@@ -148,7 +150,7 @@ export function AnalyticsDashboard() {
       value: totalEmails,
       icon: Mail,
       change: calculateChange('emails'),
-      trend: calculateChange('emails') > 0 ? "up" : "down",
+      trend: Number(calculateChange('emails')) > 0 ? "up" : "down",
       data: [
         { name: "John Doe", dateInquired: "2023-05-10T10:30:00Z", emailsSent: 5 },
         { name: "Jane Smith", dateInquired: "2023-05-10T11:15:00Z", emailsSent: 3 },
@@ -166,8 +168,7 @@ export function AnalyticsDashboard() {
       value: totalToursBooked,
       icon: Calendar,
       change: calculateChange('toursBooked'),
-      trend: calculateChange('toursBooked') > 0 ? "up" : "down",
-      data: [
+      trend: Number(calculateChange('emails')) > 0 ? "up" : "down",      data: [
         { name: "Eva Green", dateInquired: "2023-05-12T14:00:00Z", emailsSent: 4 },
         { name: "Frank Lee", dateInquired: "2023-05-13T10:30:00Z", emailsSent: 6 },
         { name: "Grace Chen", dateInquired: "2023-05-14T11:45:00Z", emailsSent: 5 },
@@ -184,7 +185,7 @@ export function AnalyticsDashboard() {
       value: `${(totalLeadsHandledByAI / totalLeads * 100).toFixed(1)}%`,
       icon: Percent,
       change: calculateChange('leadsHandledByAI'),
-      trend: calculateChange('leadsHandledByAI') > 0 ? "up" : "down",
+      trend: Number(calculateChange('leadsHandledByAI')) > 0 ? "up" : "down",
       data: [
         { name: "Henry Wilson", dateInquired: "2023-05-15T09:15:00Z", emailsSent: 3 },
         { name: "Ivy Taylor", dateInquired: "2023-05-16T13:30:00Z", emailsSent: 5 },
@@ -289,8 +290,14 @@ export function AnalyticsDashboard() {
               selected={customDateRange}
               onSelect={(range) => {
                 if (range?.from && range?.to) {
-                  setCustomDateRange(range)
-                  setDateRange(range)
+                  setCustomDateRange({
+                    from: range.from,
+                    to: range.to
+                  })
+                  setDateRange({
+                    from: range.from,
+                    to: range.to
+                  })
                 }
               }}
               numberOfMonths={2}

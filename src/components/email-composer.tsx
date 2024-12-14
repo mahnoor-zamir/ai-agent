@@ -43,7 +43,7 @@ interface Email {
   timestamp: string
 }
 
-interface EmailComposerProps {
+export interface EmailComposerProps {
   isOpen: boolean
   onClose: () => void
   to?: string
@@ -171,7 +171,7 @@ export function EmailComposer({ isOpen, onClose, to, replyTo, subject, mode = 'n
                       setSelectedTemplate(value);
                     } else {
                       setBody("");
-                      setSelectedTemplate(null);
+                      setSelectedTemplate("");
                     }
                   }}
                 >

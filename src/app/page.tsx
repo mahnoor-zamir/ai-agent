@@ -29,13 +29,7 @@ import {
 } from "@/components/ui/select"
 import { DateRangePicker } from "@/components/date-range-picker"
 import { cn } from "@/lib/utils"
-import {
-  EmptyMetricCard,
-  EmptyEngagementMetrics,
-  EmptyConversionMetrics,
-  EmptyRecentLeads,
-  EmptyUpcomingFollowups
-} from "@/components/empty-states"
+import { DateRange } from "react-day-picker"
 type Lead = {
   name: string;
   email: string;
@@ -59,12 +53,6 @@ type FollowUp = {
   timeline: string;
   emotionalConnection: string;
 }
-
-
-type DateRange = {
-  from: Date;
-  to: Date;
-};
 
 // Dummy data for demonstration
 const metrics = [
@@ -294,12 +282,16 @@ export default function HomePage() {
   const [openSlider, setOpenSlider] = useState<string | null>(null)
   const [isAISummaryOpen, setIsAISummaryOpen] = useState(false)
   const [selectedLead, setSelectedLead] = useState<{ name: string; summary: string } | null>(null)
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({ from: new Date(), to: new Date() })
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: new Date(),
+    to: new Date()
+  })
   const [showDateRangePicker, setShowDateRangePicker] = useState(false)
   const [currentRecentLeadsPage, setCurrentRecentLeadsPage] = useState(1)
   const [currentUpcomingFollowUpsPage, setCurrentUpcomingFollowUpsPage] = useState(1)
   const itemsPerPage = 5
 
+  
   const handleAISummaryClick = (leadName: string) => {
     const dummySummary = `
       AI-generated summary for ${leadName}:
@@ -322,47 +314,55 @@ export default function HomePage() {
     setIsAISummaryOpen(true)
   }
 
-  const handleDateRangeChange = (value: string) => {
-    setShowDateRangePicker(false)
-    const today = new Date()
-    let from: Date
-    let to: Date = today
+ const handleDateRangeChange = (value: string) => {
+  setShowDateRangePicker(false)
+  const today = new Date()
+  let from: Date
+  let to: Date = today
 
-    switch (value) {
-      case 'today':
-        from = today
-        break
-      case 'this-week':
-        from = subDays(today, 7)
-        break
-      case 'last-week':
-        from = subDays(today, 14)
-        to = subDays(today, 7)
-        break
-      case 'last-month':
-        from = subDays(today, 30)
-        break
-      case 'last-quarter':
-        from = subDays(today, 90)
-        break
-      case 'last-year':
-        from = subDays(today, 365)
-        break
-      case 'month-to-date':
-        from = new Date(today.getFullYear(), today.getMonth(), 1)
-        break
-      case 'year-to-date':
-        from = new Date(today.getFullYear(), 0, 1)
-        break
-      case 'custom':
-        setShowDateRangePicker(true)
-        return
-      default:
-        from = today
-    }
-
-    setDateRange({ from, to })
+  switch (value) {
+    case 'today':
+      from = today
+      to = today
+      break
+    case 'this-week':
+      from = subDays(today, 7)
+      to = today
+      break
+    case 'last-week':
+      from = subDays(today, 14)
+      to = subDays(today, 7)
+      break
+    case 'last-month':
+      from = subDays(today, 30)
+      to = today
+      break
+    case 'last-quarter':
+      from = subDays(today, 90)
+      to = today
+      break
+    case 'last-year':
+      from = subDays(today, 365)
+      to = today
+      break
+    case 'month-to-date':
+      from = new Date(today.getFullYear(), today.getMonth(), 1)
+      to = today
+      break
+    case 'year-to-date':
+      from = new Date(today.getFullYear(), 0, 1)
+      to = today
+      break
+    case 'custom':
+      setShowDateRangePicker(true)
+      return
+    default:
+      from = today
+      to = today
   }
+
+  setDateRange({ from, to })
+}
 
   return (
     <TooltipProvider>
@@ -397,7 +397,9 @@ export default function HomePage() {
                 <DateRangePicker
                   date={dateRange}
                   onDateChange={(newDateRange) => {
-                    setDateRange(newDateRange)
+                    if (newDateRange?.from && newDateRange?.to) {
+                      setDateRange(newDateRange)
+                    }
                   }}
                 />
               )}
@@ -503,28 +505,21 @@ export default function HomePage() {
                     <TableCell className="font-medium">{lead.name}</TableCell>
                     <TableCell>{lead.email}</TableCell>
                     <TableCell>
-                      <Badge 
-                        variant={
-                          lead.status === 'Tour Scheduled' ? 'default' :
-                          lead.status === 'AI Did Not Reply' ? 'destructive' :
-                          lead.status === 'Follow-up Sent' ? 'secondary' :
-                          lead.status === 'Inquiry Received' ? 'info' :
-                          'secondary'
-                        }
-                        className={
-                          lead.status === 'Tour Scheduled' 
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' 
-                          : lead.status === 'AI Did Not Reply'
-                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
-                          : lead.status === 'Follow-up Sent'
-                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100'
-                          : lead.status === 'Inquiry Received'
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'
-                          : ''
-                        }
-                      >
-                        {lead.status}
-                      </Badge>
+                    <Badge 
+  className={
+    lead.status === 'Tour Scheduled' 
+      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' 
+    : lead.status === 'AI Did Not Reply'
+      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+    : lead.status === 'Follow-up Sent'
+      ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100'
+    : lead.status === 'Inquiry Received'
+      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'
+    : ''
+  }
+>
+  {lead.status}
+</Badge>
                     </TableCell>
                     <TableCell>
                       {format(new Date(lead.timestamp), 'MMMM d, yyyy h:mm a')}

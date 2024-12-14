@@ -26,7 +26,10 @@ export function AskAIAnything() {
   const [isSliderOpen, setIsSliderOpen] = useState(false)
   const { messages, input, handleInputChange, handleSubmit, setInput } = useChat({
     api: '/api/ask',
-    initialMessages: [{ role: 'system', content: "You are a helpful AI assistant for an email analytics dashboard. Provide concise and relevant answers to user queries." }],
+    initialMessages: [{
+      role: 'system', id: 'system-message', // Unique identifier for the message
+      content: "You are a helpful AI assistant for an email analytics dashboard. Provide concise and relevant answers to user queries."
+    }],
   })
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
@@ -53,16 +56,12 @@ export function AskAIAnything() {
             size="icon"
             className="absolute left-2 top-1/2 transform -translate-y-1/2 h-5 w-5"
             onClick={() => setIsExpanded(!isExpanded)}
-            css={{
-              "&:hover": {
-                "& > svg": {
-                  animation: `${pulseAnimation} 2s infinite`,
-                },
-              },
-            }}
           >
-            <Sparkles className="h-4 w-4 text-[#0042af] animate-pulse" />
+            <Sparkles
+              className="h-4 w-4 text-[#0042af] animate-pulse hover:animate-bounce"
+            />
           </Button>
+
           <Input
             type="text"
             placeholder="Ask AI Anything"
@@ -115,11 +114,10 @@ export function AskAIAnything() {
                           />
                         </div>
                       )}
-                      <div className={`flex flex-col flex-grow max-w-[90%] ${
-                        message.role === 'user' 
-                          ? 'bg-gray-100 dark:bg-gray-700' 
+                      <div className={`flex flex-col flex-grow max-w-[90%] ${message.role === 'user'
+                          ? 'bg-gray-100 dark:bg-gray-700'
                           : 'bg-white dark:bg-gray-800'
-                      } rounded-2xl px-4 py-3`}>
+                        } rounded-2xl px-4 py-3`}>
                         <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                       </div>
                     </div>

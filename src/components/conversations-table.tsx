@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { EmailComposer } from "@/components/email-composer"
+import { EmailComposer, EmailComposerProps } from "@/components/email-composer"
 import { ConversationThread } from "@/components/conversation-thread"
 import { exportToExcel } from "@/utils/excel-export"
 import { ScrollArea } from "@/components/ui/scroll-area"

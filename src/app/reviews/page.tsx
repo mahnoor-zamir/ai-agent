@@ -84,14 +84,12 @@ export default function ReviewsPage() {
       ))
       setSelectedReview(null)
       setReply('')
-      toast({
+      Toast({
         title: 'Reply sent!',
-        description: 'Your reply has been sent successfully.',
       })
     } catch (error) {
       Toast({
         title: 'Error sending reply',
-        description: 'There was an error sending your reply. Please try again.',
         variant: 'destructive',
       })
       console.error(error)

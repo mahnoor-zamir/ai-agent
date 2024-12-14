@@ -27,7 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { DateRange } from 'react-day-picker'
 import { DateRangePicker } from "@/components/date-range-picker"
 import { cn } from "@/lib/utils"
 import {
@@ -37,7 +36,29 @@ import {
   EmptyRecentLeads,
   EmptyUpcomingFollowups
 } from "@/components/empty-states"
+type Lead = {
+  name: string;
+  email: string;
+  status: string;
+  timestamp: string;
+  source: string;
+  responseTime: string;
+  engagementLevel: string;
+  timeline: string;
+  emotionalConnection: string;
+}
 
+type FollowUp = {
+  name: string;
+  email: string;
+  scheduledFor: string;
+  type: string;
+  source: string;
+  responseTime: string;
+  engagementLevel: string;
+  timeline: string;
+  emotionalConnection: string;
+}
 
 
 type DateRange = {
@@ -216,7 +237,7 @@ const upcomingFollowUps = [
   { name: "Ivy Taylor", email: "ivy@example.com", scheduledFor: "2023-05-12T11:20:00Z", type: "First Follow-up", source: "The Knot", responseTime: "Quick", engagementLevel: "High", timeline: "Clear", emotionalConnection: "Strong" },
 ]
 
-function calculateLeadScore(lead) {
+function calculateLeadScore(lead: Lead | FollowUp) {
   let score = 0;
 
   // 1. Inquiry Source (20%)

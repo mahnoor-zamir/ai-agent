@@ -15,7 +15,7 @@ interface MetricDetailsSliderProps {
   data: any[]
   columns: { key: string; label: string }[]
 }
-
+//MetricDetailsSlider
 export function MetricDetailsSlider({ isOpen, onClose, title, description, data, columns }: MetricDetailsSliderProps) {
   const [searchTerm, setSearchTerm] = useState('')
 

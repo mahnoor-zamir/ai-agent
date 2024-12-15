@@ -31,7 +31,7 @@ export function WebsiteAIChat({ isOpen, onClose }: { isOpen: boolean; onClose: (
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const userMessage = { role: 'user', content: input }
+    const userMessage: { role: 'user' | 'assistant'; content: string } = { role: 'user', content: input }
     const newMessages = [...messages, userMessage]
     setInput('')
     setMessages(newMessages)

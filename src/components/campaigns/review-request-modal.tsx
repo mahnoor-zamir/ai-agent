@@ -247,7 +247,7 @@ export function ReviewRequestModal({ isOpen, onClose, onSave }: ReviewRequestMod
                       <Checkbox
                         id="include-signature"
                         checked={includeSignature}
-                        onCheckedChange={(checked) => setIncludeSignature(checked as boolean)}
+                        onCheckedChange={(checked: boolean) => setIncludeSignature(checked)}
                       />
                       <Label htmlFor="include-signature">Include signature from settings</Label>
                     </div>

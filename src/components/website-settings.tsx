@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Loader2 } from 'lucide-react'
-import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion" // Import Accordion components
+import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 interface WebsiteSettingsProps {
   onLogin: (siteUrl: string, username: string, password: string) => Promise<void>
@@ -18,7 +18,7 @@ export function WebsiteSettings({ onLogin }: WebsiteSettingsProps) {
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [isLoggedIn, setIsLoggedIn] = useState(false) // Added login state
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,7 +26,7 @@ export function WebsiteSettings({ onLogin }: WebsiteSettingsProps) {
     setError(null)
     try {
       await onLogin(siteUrl, username, password)
-      setIsLoggedIn(true) // Set login state to true after successful login
+      setIsLoggedIn(true)
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)
@@ -38,15 +38,14 @@ export function WebsiteSettings({ onLogin }: WebsiteSettingsProps) {
     }
   }
 
-  // Conditionally render login form or success message
   if (isLoggedIn) {
     return (
-      <Card className="w-full"> {/* Card wrapper remains for consistency */}
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Website Settings</CardTitle>
         </CardHeader>
         <CardContent>
-          <Alert variant="success">
+          <Alert variant="default">
             <AlertTitle>Success</AlertTitle>
             <AlertDescription>Successfully connected to WordPress!</AlertDescription>
           </Alert>
@@ -56,9 +55,9 @@ export function WebsiteSettings({ onLogin }: WebsiteSettingsProps) {
   }
 
   return (
-    <AccordionItem value="website-settings"> {/* Wrap WebsiteSettings in AccordionItem */}
+    <AccordionItem value="website-settings">
       <AccordionTrigger>Website Settings</AccordionTrigger>
-      <AccordionContent> {/* Wrap form content in AccordionContent */}
+      <AccordionContent>
         <Card className="w-full">
           <CardHeader>
             <CardTitle>Website Settings</CardTitle>
@@ -114,4 +113,3 @@ export function WebsiteSettings({ onLogin }: WebsiteSettingsProps) {
     </AccordionItem>
   )
 }
-

@@ -137,7 +137,7 @@ export function BlastForm() {
                   <Checkbox
                     id={contact.id}
                     checked={selectedContacts.includes(contact.id)}
-                    onCheckedChange={(checked) => {
+                    onCheckedChange={(checked: boolean) => {
                       if (checked) {
                         setSelectedContacts([...selectedContacts, contact.id])
                       } else {
@@ -242,7 +242,7 @@ export function BlastForm() {
                     <Checkbox
                       id="include-signature"
                       checked={includeSignature}
-                      onCheckedChange={(checked) => setIncludeSignature(checked as boolean)}
+                      onCheckedChange={(checked: boolean) => setIncludeSignature(checked)}
                     />
                     <Label htmlFor="include-signature">Include signature from settings</Label>
                   </div>

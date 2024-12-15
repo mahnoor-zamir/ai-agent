@@ -46,7 +46,7 @@ export function TemplateModal({ isOpen, onClose, onSave, editingTemplate }: Temp
   const [isBold, setIsBold] = useState(false)
   const [isItalic, setIsItalic] = useState(false)
   const [isUnderline, setIsUnderline] = useState(false)
-  const [alignment, setAlignment] = useState('left')
+  const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>('left')
   const [attachments, setAttachments] = useState<File[]>([])
 
   const handleSave = () => {

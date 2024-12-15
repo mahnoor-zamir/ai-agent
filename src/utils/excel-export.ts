@@ -1,4 +1,4 @@
-export function exportToExcel<T>(data: T[], filename: string) {
+export function exportToExcel<T extends object>(data: T[], filename: string) {
   const headers = Object.keys(data[0]);
   const csvContent = [
     headers.join(','),

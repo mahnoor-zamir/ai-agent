@@ -66,11 +66,53 @@ export function EmailSettings() {
     setAnswers(newAnswers)
   }
 
-  const handleConnectEmail = (provider: "gmail" | "outlook") => {
-    // Implement email connection logic here
-    setConnectedEmail(provider)
+  const handleConnectEmail = async (provider: "gmail" | "outlook") => {
+    try {
+      // 1. Initiate OAuth process
+      if (provider === "gmail") {
+        // Google OAuth configuration
+        const googleAuthUrl = generateGoogleAuthUrl()
+        // Redirect user to Google's authorization page
+        window.location.href = googleAuthUrl
+      } else if (provider === "outlook") {
+        // Microsoft/Outlook OAuth configuration
+        const microsoftAuthUrl = generateMicrosoftAuthUrl()
+        // Redirect user to Microsoft's authorization page
+        window.location.href = microsoftAuthUrl
+      }
+    } catch (error) {
+      // Handle connection errors
+      console.error(`Error connecting ${provider} account:`, error)
+    }
   }
-
+  
+  // Helper function to generate authorization URL
+  const generateGoogleAuthUrl = () => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    const redirectUri = encodeURIComponent(process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI)
+    const scopes = encodeURIComponent('https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly')
+    
+    return `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${clientId}` +
+      `&redirect_uri=${redirectUri}` +
+      `&response_type=code` +
+      `&scope=${scopes}` +
+      `&access_type=offline` +
+      `&prompt=consent`
+  }
+  
+  const generateMicrosoftAuthUrl = () => {
+    const clientId = process.env.NEXT_PUBLIC_MICROSOFT_CLIENT_ID
+    const redirectUri = encodeURIComponent(process.env.NEXT_PUBLIC_MICROSOFT_REDIRECT_URI)
+    const scopes = encodeURIComponent('offline_access Mail.Send Mail.Read')
+    
+    return `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?` +
+      `client_id=${clientId}` +
+      `&redirect_uri=${redirectUri}` +
+      `&response_type=code` +
+      `&scope=${scopes}` +
+      `&prompt=consent`
+  }
   const handleConnectMarketing = (platform: "google" | "meta" | "analytics") => {
     // Implement marketing platform connection logic here
     switch (platform) {
@@ -100,6 +142,67 @@ export function EmailSettings() {
       metaAdsConnected,
       googleAnalyticsConnected
     })
+  }
+
+  const exchangeAuthCodeForTokens = async (code: string, provider: "gmail" | "outlook") => {
+    try {
+      const response = await fetch('/api/auth/exchange-token', {
+        method: 'POST',
+        body: JSON.stringify({
+          code,
+          provider
+        })
+      })
+  
+      const { accessToken, refreshToken } = await response.json()
+  
+      // Store tokens securely (typically in a backend database associated with user)
+      await saveEmailCredentials({
+        provider,
+        accessToken,
+        refreshToken
+      })
+  
+      // Update local state
+      setConnectedEmail(provider)
+    } catch (error) {
+      // Handle token exchange errors
+      console.error('Token exchange failed:', error)
+    }
+  }
+  const refreshAccessToken = async (provider: "gmail" | "outlook") => {
+    try {
+      const response = await fetch('/api/auth/refresh-token', {
+        method: 'POST',
+        body: JSON.stringify({ provider })
+      })
+  
+      const { accessToken } = await response.json()
+      
+      // Update stored access token
+      await updateStoredAccessToken(provider, accessToken)
+    } catch (error) {
+      // Handle refresh errors, potentially re-authenticate
+      console.error('Token refresh failed:', error)
+      setConnectedEmail(null)
+    }
+  }
+  const disconnectEmail = async (provider: "gmail" | "outlook") => {
+    try {
+      // Revoke tokens on provider's side
+      await fetch('/api/auth/revoke-token', {
+        method: 'POST',
+        body: JSON.stringify({ provider })
+      })
+  
+      // Clear local credentials
+      await clearStoredCredentials(provider)
+      
+      // Update state
+      setConnectedEmail(null)
+    } catch (error) {
+      console.error(`Error disconnecting ${provider}:`, error)
+    }
   }
 
   const updateFollowUpTemplate = (index: number, field: keyof { content: string; schedule: string }, value: string) => {

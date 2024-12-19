@@ -67,8 +67,11 @@ export function EmailSettings() {
   }
 
   const handleConnectEmail = (provider: "gmail" | "outlook") => {
-    // Implement email connection logic here
-    setConnectedEmail(provider)
+    if (provider === "gmail") {
+      window.location.href = "/api/auth/google"
+    } else if (provider === "outlook") {
+      window.location.href = "/api/auth/outlook"
+    }
   }
 
   const handleConnectMarketing = (platform: "google" | "meta" | "analytics") => {

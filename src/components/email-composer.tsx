@@ -163,28 +163,27 @@ export function EmailComposer({ isOpen, onClose, to, replyTo, subject, mode = 'n
             <div className="flex items-center justify-between mb-4">
               <div className="flex-1 mr-4">
                 <Select
-                  value={selectedTemplate}
-                  onValueChange={(value) => {
-                    const template = templates.find(t => t.id === value);
-                    if (template) {
-                      setBody(template.content);
-                      setSelectedTemplate(value);
-                    } else {
-                      setBody("");
-                      setSelectedTemplate("");
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a template" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">No template</SelectItem>
-                    {templates.map((template) => (
-                      <SelectItem key={template.id} value={template.id}>{template.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+  value={selectedTemplate}
+  onValueChange={(value) => {
+    const template = templates.find(t => t.id === value);
+    if (template) {
+      setBody(template.content);
+      setSelectedTemplate(value);
+    } else {
+      setBody("");
+      setSelectedTemplate("");
+    }
+  }}
+>
+  <SelectTrigger className="w-full">
+    <SelectValue placeholder="Select a template" />
+  </SelectTrigger>
+  <SelectContent>
+    {templates.map((template) => (
+      <SelectItem key={template.id} value={template.id}>{template.name}</SelectItem>
+    ))}
+  </SelectContent>
+</Select>
               </div>
               <Button 
                 variant="outline" 

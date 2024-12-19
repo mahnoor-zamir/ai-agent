@@ -13,6 +13,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   oauth2Client.setCredentials(tokens);
   // Store tokens in session or database
   // Store authentication status in local storage
-  res.setHeader('Set-Cookie', 'isGmailConnected=true; Path=/; HttpOnly');
+  res.setHeader('Set-Cookie', [
+    `tokens=${encodeURIComponent(JSON.stringify(tokens))}; Path=/; HttpOnly; Secure; SameSite=Strict`,
+    `isGmailConnected=true; Path=/; HttpOnly; Secure; SameSite=Strict`,
+  ]);
   res.redirect('/settings');
 }

@@ -1,14 +1,14 @@
 import { ConfidentialClientApplication } from '@azure/msal-node';
 
-if (!process.env.OUTLOOK_CLIENT_ID || !process.env.OUTLOOK_TENANT_ID || !process.env.OUTLOOK_CLIENT_SECRET) {
+if (!process.env.MICROSOFT_CLIENT_ID || !process.env.MICROSOFT_TENANT_ID || !process.env.MICROSOFT_CLIENT_SECRET) {
   throw new Error('Missing required environment variables for Outlook authentication');
 }
 
 const msalConfig = {
   auth: {
-    clientId: process.env.OUTLOOK_CLIENT_ID,
-    authority: `https://login.microsoftonline.com/${process.env.OUTLOOK_TENANT_ID}`,
-    clientSecret: process.env.OUTLOOK_CLIENT_SECRET,
+    clientId: process.env.MICROSOFT_CLIENT_ID,
+    authority: `https://login.microsoftonline.com/${process.env.MICROSOFT_TENANT_ID}`,
+    clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
   },
 };
 

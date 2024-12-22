@@ -31,7 +31,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Redirect to settings or another page
     res.redirect('/settings');
   } catch (error) {
-    console.error('Error during Google OAuth callback:', error.message);
+    if (error instanceof Error) {
+      console.error('Error during Google OAuth callback:', error.message);
+    } else {
+      console.error('Error during Google OAuth callback:', error);
+    }
     res.status(500).send('An error occurred during the Google OAuth callback process');
   }
 }

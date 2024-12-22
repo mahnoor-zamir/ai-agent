@@ -1,3 +1,4 @@
+//src\app\conversations\page.tsx
 "use client";
 
 import { ConversationsTable } from "@/components/conversations-table";
@@ -19,7 +20,7 @@ export default function ConversationsPage() {
 
         if (!response.ok) {
           if (response.status === 401) {
-            setError("You are not authorized. Please log in.");
+            setError("You are not authorized. Please connect.");
           } else {
             setError("Failed to fetch emails. Please try again later.");
           }

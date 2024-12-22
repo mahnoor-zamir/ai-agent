@@ -82,12 +82,59 @@ export function EmailComposer({ isOpen, onClose, to, replyTo, subject, mode = 'n
     }
   }, [mode, subject, to])
 
-  const handleSend = () => {
-    // Here you would implement the logic to send the email
-    console.log('Sending email:', { to: toField, cc, bcc, subject: emailSubject, body, fontColor, fontFamily })
-    onClose()
-  }
+  const [isSending, setIsSending] = useState(false)
+  const [sendError, setError] = useState<string | null>(null)
 
+  const handleSend = async () => {
+    try {
+      setIsSending(true)
+      setError(null)
+
+      // Prepare the email content with styling
+      const styledBody = `
+        <div style="font-family: ${fontFamily}; color: ${fontColor};">
+          ${body}
+        </div>
+      `;
+
+      const response = await fetch('/api/send-emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: toField,
+          cc,
+          bcc,
+          subject: emailSubject,
+          content: styledBody,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send email');
+      }
+
+      // Clear form and close dialog on success
+      setToField('')
+      setCc('')
+      setBcc('')
+      setEmailSubject('')
+      setBody('')
+      setSelectedTemplate('')
+      onClose()
+
+      // You might want to add a toast notification here
+      console.log('Email sent successfully!');
+    } catch (error) {
+      console.error('Error sending email:', error);
+      setError(error instanceof Error ? error.message : 'Failed to send email');
+    } finally {
+      setIsSending(false)
+    }
+  }
 
   const formatButton = (icon: React.ReactNode, label: string, action: () => void) => (
     <TooltipProvider>
@@ -262,10 +309,30 @@ export function EmailComposer({ isOpen, onClose, to, replyTo, subject, mode = 'n
           </div>
         </div>
         <div className="flex justify-between items-center p-4 border-t">
-          <Button onClick={handleSend} className="gap-2">
-            <Send className="h-4 w-4" />
-            Send
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button 
+              onClick={handleSend} 
+              className="gap-2"
+              disabled={isSending || !toField || !emailSubject || !body}
+            >
+              {isSending ? (
+                <>
+                  <span className="animate-spin">⏳</span>
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Send
+                </>
+              )}
+            </Button>
+            {sendError && (
+              <span className="text-destructive text-sm">
+                {sendError}
+              </span>
+            )}
+          </div>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

@@ -1,108 +1,105 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { format, startOfWeek, addDays, parseISO, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, endOfWeek } from 'date-fns'
-import { ChevronLeft, ChevronRight, Plus, Search, Circle, Copy, Trash2, PenLine, Calendar, Clock, Bell } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { useState, useEffect } from 'react';
+import { format, startOfWeek, addDays, parseISO, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, endOfWeek } from 'date-fns';
+import { ChevronLeft, ChevronRight, Plus, Search, Circle, Copy, Trash2, PenLine, Calendar, Clock, Bell } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { CreateAppointmentModal } from "./create-appointment-modal"
-
-// Sample event data
-const events = [
-  {
-    id: 1,
-    title: "Monday standup",
-    time: "9:00 AM",
-    date: "2025-01-06",
-    color: "bg-gray-100"
-  },
-  {
-    id: 2,
-    title: "Product demo",
-    time: "10:30 AM",
-    date: "2025-01-06",
-    color: "bg-blue-100"
-  },
-  {
-    id: 3,
-    title: "One-on-one with Eva",
-    time: "10:00 AM",
-    date: "2025-01-07",
-    color: "bg-pink-100"
-  },
-  {
-    id: 4,
-    title: "Deep work",
-    time: "9:00 AM",
-    date: "2025-01-08",
-    color: "bg-blue-100"
-  },
-  {
-    id: 5,
-    title: "Lunch with Olivia",
-    time: "12:00 PM",
-    date: "2025-01-09",
-    color: "bg-green-100",
-    hasIndicator: true
-  },
-  {
-    id: 6,
-    title: "Friday standup",
-    time: "9:00 AM",
-    date: "2025-01-10",
-    color: "bg-gray-100"
-  },
-  {
-    id: 7,
-    title: "House inspection",
-    time: "11:00 AM",
-    date: "2025-01-11",
-    color: "bg-orange-100",
-    hasIndicator: true
-  },
-  {
-    id: 8,
-    title: "Ava's engagement party",
-    time: "1:00 PM",
-    date: "2025-01-12",
-    color: "bg-purple-100",
-    hasIndicator: true
-  }
-]
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { CreateAppointmentModal } from "./create-appointment-modal";
 
 export function CalendarView() {
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 0, 10))
-  const [searchTerm, setSearchTerm] = useState('')
-  const [view, setView] = useState<'month' | 'week' | 'day'>('month')
-  const [selectedEvent, setSelectedEvent] = useState(events[2])
-  const [isCreateAppointmentOpen, setIsCreateAppointmentOpen] = useState(false)
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [searchTerm, setSearchTerm] = useState('');
+  const [view, setView] = useState<'month' | 'week' | 'day'>('month');
+  interface Event {
+    id: string;
+    summary: string;
+    start: {
+      dateTime: string;
+    };
+    end: {
+      dateTime: string;
+    };
+  }
+
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isCreateAppointmentOpen, setIsCreateAppointmentOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('/api/calendar/fetch-events');
+        if (!response.ok) {
+          throw new Error('Failed to fetch events');
+        }
+        const data = await response.json();
+        setEvents(data);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  interface AppointmentDetails {
+    summary: string;
+    start: {
+      dateTime: string;
+    };
+    end: {
+      dateTime: string;
+    };
+  }
+
+  const handleCreateAppointment = async (appointmentDetails: AppointmentDetails) => {
+    try {
+      const response = await fetch('/api/calendar/add-event', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(appointmentDetails),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add event');
+      }
+
+      const newEvent = await response.json();
+      setEvents((prevEvents) => [...prevEvents, newEvent]);
+      setIsCreateAppointmentOpen(false);
+    } catch (error) {
+      console.error('Error adding event:', error);
+    }
+  };
 
   const renderWeekView = () => {
-    return <div>Week View (Not implemented)</div>
-  }
+    return <div>Week View (Not implemented)</div>;
+  };
 
   const renderDayView = () => {
-    return <div>Day View (Not implemented)</div>
-  }
+    return <div>Day View (Not implemented)</div>;
+  };
 
   const renderMonthView = () => {
-    const monthStart = startOfMonth(currentDate)
-    const monthEnd = endOfMonth(currentDate)
-    const startDate = startOfWeek(monthStart)
-    const endDate = endOfWeek(monthEnd)
-    
-    const days = eachDayOfInterval({ start: startDate, end: endDate })
-    const weeks = Math.ceil(days.length / 7)
+    const monthStart = startOfMonth(currentDate);
+    const monthEnd = endOfMonth(currentDate);
+    const startDate = startOfWeek(monthStart);
+    const endDate = endOfWeek(monthEnd);
+
+    const days = eachDayOfInterval({ start: startDate, end: endDate });
+    const weeks = Math.ceil(days.length / 7);
 
     return (
       <div className="flex flex-col h-full">
@@ -120,11 +117,11 @@ export function CalendarView() {
           {Array.from({ length: weeks }).map((_, weekIndex) => (
             <div key={weekIndex} className="grid grid-cols-7 border-b last:border-b-0">
               {days.slice(weekIndex * 7, (weekIndex + 1) * 7).map((day, dayIndex) => {
-                const dayStr = format(day, 'yyyy-MM-dd')
-                const dayEvents = events.filter(event => event.date === dayStr)
-                const isCurrentMonth = day.getMonth() === currentDate.getMonth()
-                const isToday = dayStr === format(new Date(2025, 0, 10), 'yyyy-MM-dd')
-                const showMore = dayEvents.length > 3
+                const dayStr = format(day, 'yyyy-MM-dd');
+                const dayEvents = events.filter(event => event.start.dateTime.startsWith(dayStr));
+                const isCurrentMonth = day.getMonth() === currentDate.getMonth();
+                const isToday = dayStr === format(new Date(), 'yyyy-MM-dd');
+                const showMore = dayEvents.length > 3;
 
                 return (
                   <div
@@ -142,15 +139,12 @@ export function CalendarView() {
                       {dayEvents.slice(0, 3).map((event) => (
                         <div
                           key={event.id}
-                          className={`${event.color} rounded-md p-1 text-xs`}
+                          className={`bg-blue-100 rounded-md p-1 text-xs`}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-medium truncate">{event.title}</span>
-                            {event.hasIndicator && (
-                              <Circle className="h-1.5 w-1.5 fill-current" />
-                            )}
+                            <span className="font-medium truncate">{event.summary}</span>
                           </div>
-                          <div className="text-gray-600">{event.time}</div>
+                          <div className="text-gray-600">{format(parseISO(event.start.dateTime), 'p')}</div>
                         </div>
                       ))}
                       {showMore && (
@@ -160,14 +154,14 @@ export function CalendarView() {
                       )}
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           ))}
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -236,13 +230,8 @@ export function CalendarView() {
       <CreateAppointmentModal
         isOpen={isCreateAppointmentOpen}
         onClose={() => setIsCreateAppointmentOpen(false)}
-        onCreateAppointment={(appointmentDetails) => {
-          console.log("New appointment:", appointmentDetails)
-          setIsCreateAppointmentOpen(false)
-          // TODO: Implement appointment creation logic
-        }}
+        onCreateAppointment={handleCreateAppointment}
       />
     </div>
-  )
+  );
 }
-

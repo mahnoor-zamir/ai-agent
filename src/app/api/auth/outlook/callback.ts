@@ -23,8 +23,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     const tokens = tokenResponse.data;
-    // Store tokens in session or database
-    res.setHeader('Set-Cookie', 'isOutlookConnected=true; Path=/; HttpOnly');
+
+    console.log('Tokens obtained successfully');
+
+    // Securely store tokens in cookies
+    res.setHeader('Set-Cookie', [
+      `outlookTokens=${encodeURIComponent(JSON.stringify(tokens))}; Path=/; HttpOnly; Secure; SameSite=Strict`,
+      `isOutlookConnected=true; Path=/; HttpOnly; Secure; SameSite=Strict`,
+    ]);
     res.redirect('/settings');
   } catch (error) {
     console.error('Error during Microsoft OAuth callback:', error);

@@ -27,27 +27,11 @@ export default function SettingsPage() {
     // Add your login logic here
   }
 
-  const handleConnectGmail = () => {
-    window.location.href = "/api/auth/google"
-  }
-
-  const handleConnectOutlook = () => {
-    window.location.href = "/api/auth/outlook"
-  }
-
   return (
     <div className="space-y-6 content-container">
       <div>
         <h1 className="text-3xl font-bold">Settings</h1>
         <p className="text-lg text-muted-foreground">Configure your settings</p>
-      </div>
-      <div className="flex space-x-4">
-        <button onClick={handleConnectGmail} className="btn btn-primary">
-          {isGmailConnected ? "Gmail Connected" : "Connect Gmail"}
-        </button>
-        <button onClick={handleConnectOutlook} className="btn btn-primary">
-          {isOutlookConnected ? "Outlook Connected" : "Connect Outlook"}
-        </button>
       </div>
       <Accordion type="single" collapsible className="w-full">
         <ErrorBoundary fallback={<div>Something went wrong in the Email Settings.</div>}>

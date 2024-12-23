@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { format } from 'date-fns'
-import { CalendarIcon } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { useState } from 'react';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -12,29 +12,29 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Calendar } from "@/components/ui/calendar"
+} from "@/components/ui/dialog";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface CreateAppointmentModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onCreateAppointment: (appointmentDetails: AppointmentDetails) => void
+  isOpen: boolean;
+  onClose: () => void;
+  onCreateAppointment: (appointmentDetails: AppointmentDetails) => void;
 }
 
 interface AppointmentDetails {
-  title: string
-  date: Date | undefined
-  startTime: string
-  endTime: string
-  location: string
-  email: string
-  notes: string
+  title: string;
+  date: Date | undefined;
+  startTime: string;
+  endTime: string;
+  location: string;
+  email: string;
+  notes: string;
 }
 
 export function CreateAppointmentModal({
@@ -50,19 +50,19 @@ export function CreateAppointmentModal({
     location: '',
     email: '',
     notes: '',
-  })
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setAppointmentDetails((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setAppointmentDetails((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleDateSelect = (date: Date | undefined) => {
-    setAppointmentDetails((prev) => ({ ...prev, date }))
-  }
+    setAppointmentDetails((prev) => ({ ...prev, date }));
+  };
 
   const handleCreateAppointment = () => {
-    onCreateAppointment(appointmentDetails)
+    onCreateAppointment(appointmentDetails);
     setAppointmentDetails({
       title: '',
       date: undefined,
@@ -71,8 +71,8 @@ export function CreateAppointmentModal({
       location: '',
       email: '',
       notes: '',
-    })
-  }
+    });
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -188,6 +188,5 @@ export function CreateAppointmentModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

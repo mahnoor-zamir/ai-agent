@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { useState } from "react";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,17 +42,20 @@ export function CreateAppointmentModal({
   onClose,
   onCreateAppointment,
 }: CreateAppointmentModalProps) {
-  const [appointmentDetails, setAppointmentDetails] = useState<AppointmentDetails>({
-    title: '',
-    date: undefined,
-    startTime: '',
-    endTime: '',
-    location: '',
-    email: '',
-    notes: '',
-  });
+  const [appointmentDetails, setAppointmentDetails] =
+    useState<AppointmentDetails>({
+      title: "",
+      date: undefined,
+      startTime: "",
+      endTime: "",
+      location: "",
+      email: "",
+      notes: "",
+    });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setAppointmentDetails((prev) => ({ ...prev, [name]: value }));
   };
@@ -61,24 +64,39 @@ export function CreateAppointmentModal({
     setAppointmentDetails((prev) => ({ ...prev, date }));
   };
 
+  const isFormValid =
+    appointmentDetails.title &&
+    appointmentDetails.date &&
+    appointmentDetails.startTime &&
+    appointmentDetails.endTime &&
+    /\S+@\S+\.\S+/.test(appointmentDetails.email);
+
   const handleCreateAppointment = () => {
+    if (!isFormValid) {
+      alert("Please fill in all required fields correctly.");
+      return;
+    }
+
     onCreateAppointment(appointmentDetails);
     setAppointmentDetails({
-      title: '',
+      title: "",
       date: undefined,
-      startTime: '',
-      endTime: '',
-      location: '',
-      email: '',
-      notes: '',
+      startTime: "",
+      endTime: "",
+      location: "",
+      email: "",
+      notes: "",
     });
+    onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-4 bg-white border-b">
-          <DialogTitle className="text-2xl font-semibold">Create Appointment</DialogTitle>
+          <DialogTitle className="text-2xl font-semibold">
+            Create Appointment
+          </DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Fill in the details for your new appointment.
           </DialogDescription>
@@ -107,7 +125,9 @@ export function CreateAppointmentModal({
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {appointmentDetails.date ? format(appointmentDetails.date, "PPP") : <span>Pick a date</span>}
+                    {appointmentDetails.date
+                      ? format(appointmentDetails.date, "PPP")
+                      : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -123,29 +143,23 @@ export function CreateAppointmentModal({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="startTime">Start Time</Label>
-                <div>
-                  <Input
-                    id="startTime"
-                    name="startTime"
-                    type="time"
-                    value={appointmentDetails.startTime}
-                    onChange={handleInputChange}
-                    className=""
-                  />
-                </div>
+                <Input
+                  id="startTime"
+                  name="startTime"
+                  type="time"
+                  value={appointmentDetails.startTime}
+                  onChange={handleInputChange}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="endTime">End Time</Label>
-                <div>
-                  <Input
-                    id="endTime"
-                    name="endTime"
-                    type="time"
-                    value={appointmentDetails.endTime}
-                    onChange={handleInputChange}
-                    className=""
-                  />
-                </div>
+                <Input
+                  id="endTime"
+                  name="endTime"
+                  type="time"
+                  value={appointmentDetails.endTime}
+                  onChange={handleInputChange}
+                />
               </div>
             </div>
           </div>
@@ -183,8 +197,12 @@ export function CreateAppointmentModal({
           </div>
         </div>
         <DialogFooter className="px-6 py-4 bg-muted">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleCreateAppointment}>Create Appointment</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleCreateAppointment} disabled={!isFormValid}>
+            Create Appointment
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -20,11 +20,12 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { to, cc, bcc, subject, content, provider } = body;
-
-    if (!to || !subject || !content || !provider) {
-      return NextResponse.json({ error: 'Missing required fields: to, subject, content, or provider' }, { status: 400 });
-    }
+    const { to, cc, bcc, subject, content } = body;
+    const provider = 'gmail'
+    console.log({ to, cc, bcc, subject, content, provider })
+    // if (!to || !subject || !content || !provider) {
+    //   return NextResponse.json({ error: 'Missing required fields: to, subject, content, or provider' }, { status: 400 });
+    // }
 
     if (provider === 'gmail' && tokensCookie) {
       const tokens = JSON.parse(tokensCookie.value);

@@ -96,7 +96,15 @@ export function EmailComposer({ isOpen, onClose, to, replyTo, subject, mode = 'n
           ${body}
         </div>
       `;
-
+    //   console.log({
+    //     to: toField,
+    //     cc,
+    //     bcc,
+    //     subject: emailSubject,
+    //     content: styledBody,
+    //     provider: 'gmail' // Or another provider
+    // });
+    
       const response = await fetch('/api/send-emails', {
         method: 'POST',
         headers: {

@@ -31,7 +31,7 @@ export function CalendarView() {
       dateTime: string;
     };
   }
-
+  
   const [events, setEvents] = useState<Event[]>([]);
   const [isCreateAppointmentOpen, setIsCreateAppointmentOpen] = useState(false);
 
@@ -64,7 +64,8 @@ export function CalendarView() {
 
   const handleCreateAppointment = async (appointmentDetails: AppointmentDetails) => {
     try {
-      const response = await fetch('/api/calendar/add-event', {
+      console.log(appointmentDetails)
+      const response = await fetch('/api/calendar/add-events', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const tokensCookie = cookieStore.get('tokens');
-
+    console.log('Tokens cookie:', tokensCookie);
     if (!tokensCookie) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }

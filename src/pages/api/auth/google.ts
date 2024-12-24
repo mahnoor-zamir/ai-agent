@@ -10,7 +10,12 @@ const oauth2Client = new google.auth.OAuth2(
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const url = oauth2Client.generateAuthUrl({
     access_type: 'offline',
-    scope: ['https://www.googleapis.com/auth/gmail.readonly'],
+    scope: [
+      'https://www.googleapis.com/auth/calendar.readonly', // For read-only access to Google Calendar
+      'https://www.googleapis.com/auth/gmail.readonly', // For read-only access to Gmail
+      'https://www.googleapis.com/auth/gmail.send',
+      'https://www.googleapis.com/auth/calendar.events'
+    ],
   });
   res.redirect(url);
 }

@@ -1,5 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getTokenFromCode } from '@/lib/outlook-auth';
+import axios from 'axios';
+
+const clientId = process.env.MICROSOFT_CLIENT_ID;
+const clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
+const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/outlook/callback`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -8,9 +12,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Authorization code is missing');
     }
 
-    const token = await getTokenFromCode(code as string);
-    // Store token in session or database
-    res.setHeader('Set-Cookie', 'isOutlookConnected=true; Path=/; HttpOnly');
+    const tokenResponse = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token', null, {
+      params: {
+        client_id: clientId,
+        client_secret: clientSecret,
+        code,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+      },
+    });
+
+    const tokens = tokenResponse.data;
+
+    console.log('Tokens obtained successfully');
+
+    // Securely store tokens in cookies
+    res.setHeader('Set-Cookie', [
+      `outlookTokens=${encodeURIComponent(JSON.stringify(tokens))}; Path=/; HttpOnly; Secure; SameSite=Strict`,
+      `isOutlookConnected=true; Path=/; HttpOnly; Secure; SameSite=Strict`,
+    ]);
     res.redirect('/settings');
   } catch (error) {
     console.error('Error during Microsoft OAuth callback:', error);

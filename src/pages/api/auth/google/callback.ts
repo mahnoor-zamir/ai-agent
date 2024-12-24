@@ -8,14 +8,34 @@ const oauth2Client = new google.auth.OAuth2(
 );
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { code } = req.query;
-  const { tokens } = await oauth2Client.getToken(code as string);
-  oauth2Client.setCredentials(tokens);
-  // Store tokens in session or database
-  // Store authentication status in local storage
-  res.setHeader('Set-Cookie', [
-    `tokens=${encodeURIComponent(JSON.stringify(tokens))}; Path=/; HttpOnly; Secure; SameSite=Strict`,
-    `isGmailConnected=true; Path=/; HttpOnly; Secure; SameSite=Strict`,
-  ]);
-  res.redirect('/settings');
+  try {
+    const { code } = req.query;
+
+    if (!code || typeof code !== 'string') {
+      console.error('Authorization code is missing or invalid');
+      return res.status(400).send('Invalid request: Authorization code is required');
+    }
+
+    // Exchange the authorization code for tokens
+    const { tokens } = await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(tokens);
+
+    console.log('Tokens obtained successfully');
+
+    // Securely store tokens in cookies
+    res.setHeader('Set-Cookie', [
+      `tokens=${encodeURIComponent(JSON.stringify(tokens))}; Path=/; HttpOnly; Secure; SameSite=Strict`,
+      `isGmailConnected=true; Path=/; HttpOnly; Secure; SameSite=Strict`,
+    ]);
+
+    // Redirect to settings or another page
+    res.redirect('/settings');
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Error during Google OAuth callback:', error.message);
+    } else {
+      console.error('Error during Google OAuth callback:', error);
+    }
+    res.status(500).send('An error occurred during the Google OAuth callback process');
+  }
 }

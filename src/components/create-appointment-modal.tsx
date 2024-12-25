@@ -24,7 +24,8 @@ import { cn } from "@/lib/utils";
 interface CreateAppointmentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateAppointment: (appointmentDetails: AppointmentDetails) => void;
+  onCreateAppointment: (appointmentDetails: AppointmentDetails) => Promise<void>;
+
 }
 
 interface AppointmentDetails {

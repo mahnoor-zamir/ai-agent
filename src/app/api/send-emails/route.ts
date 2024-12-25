@@ -65,40 +65,7 @@ export async function POST(req: NextRequest) {
 
       console.log('Email sent successfully via Gmail:', response.data);
       return NextResponse.json({ success: true, messageId: response.data.id });
-    } else if (provider === 'outlook' && outlookTokensCookie) {
-      const tokens = JSON.parse(outlookTokensCookie.value);
-      if (!tokens.access_token) {
-        return NextResponse.json({ error: 'Invalid authentication tokens' }, { status: 401 });
-      }
-
-      const client = Client.init({
-        authProvider: (done) => {
-          done(null, tokens.access_token);
-        },
-      });
-
-      const message = {
-        subject: subject,
-        body: {
-          contentType: 'HTML',
-          content: content,
-        },
-        toRecipients: [
-          {
-            emailAddress: {
-              address: to,
-            },
-          },
-        ],
-        ccRecipients: cc ? cc.split(',').map((email: string) => ({ emailAddress: { address: email.trim() } })) : [],
-        bccRecipients: bcc ? bcc.split(',').map((email: string) => ({ emailAddress: { address: email.trim() } })) : [],
-      };
-
-      await client.api('/me/sendMail').post({ message });
-
-      console.log('Email sent successfully via Outlook');
-      return NextResponse.json({ success: true });
-    } else {
+    }  else {
       return NextResponse.json({ error: 'Invalid provider or missing tokens' }, { status: 400 });
     }
   } catch (error) {

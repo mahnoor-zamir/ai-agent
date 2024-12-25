@@ -80,7 +80,7 @@ export function CalendarView() {
     };
   }
 
-  const handleCreateAppointment = async (appointmentDetails: AppointmentDetails) => {
+  const handleCreateAppointment = async (appointmentDetails: any) => {
     try {
       const response = await fetch('/api/calendar/add-events', {
         method: 'POST',

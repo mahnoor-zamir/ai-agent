@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to add event', 
-        details: error.response?.data || error.message 
+        details: error
       }, 
       { status: 500 }
     );

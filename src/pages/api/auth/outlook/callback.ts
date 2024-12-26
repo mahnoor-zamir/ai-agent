@@ -12,15 +12,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Authorization code is missing');
     }
 
-    const tokenResponse = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token', null, {
-      params: {
-        client_id: clientId,
-        client_secret: clientSecret,
-        code,
-        redirect_uri: redirectUri,
-        grant_type: 'authorization_code',
-      },
+    // Parameters for the token request
+    const tokenParams = new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: clientId || '',
+      client_secret: clientSecret || '',
+      code: code.toString(),
+      redirect_uri: redirectUri,
     });
+
+    // Make the POST request to obtain tokens
+    const tokenResponse = await axios.post(
+      'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+      tokenParams.toString(),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }
+    );
 
     const tokens = tokenResponse.data;
 
@@ -33,7 +43,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     ]);
     res.redirect('/settings');
   } catch (error) {
-    console.error('Error during Microsoft OAuth callback:', error);
+    if (axios.isAxiosError(error) && error.response) {
+      console.error('Error during Microsoft OAuth callback:', error.response.data);
+    } else {
+      const errorMessage = (error as Error).message;
+      console.error('Error during Microsoft OAuth callback:', errorMessage);
+    }
     res.status(400).send('Error during Microsoft OAuth callback');
   }
 }

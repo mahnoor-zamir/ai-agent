@@ -20,14 +20,13 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { to, cc, bcc, subject, content } = body;
-    const provider = 'gmail'
-    console.log({ to, cc, bcc, subject, content, provider })
+    const { to, cc, bcc, subject, content, provider } = body;
+
     // if (!to || !subject || !content || !provider) {
     //   return NextResponse.json({ error: 'Missing required fields: to, subject, content, or provider' }, { status: 400 });
     // }
 
-    if (provider === 'gmail' && tokensCookie) {
+    if (tokensCookie) {
       const tokens = JSON.parse(tokensCookie.value);
       if (!tokens.access_token) {
         return NextResponse.json({ error: 'Invalid authentication tokens' }, { status: 401 });
@@ -65,7 +64,40 @@ export async function POST(req: NextRequest) {
 
       console.log('Email sent successfully via Gmail:', response.data);
       return NextResponse.json({ success: true, messageId: response.data.id });
-    }  else {
+    } else if (outlookTokensCookie) {
+      const tokens = JSON.parse(outlookTokensCookie.value);
+      if (!tokens.access_token) {
+        return NextResponse.json({ error: 'Invalid authentication tokens' }, { status: 401 });
+      }
+
+      const client = Client.init({
+        authProvider: (done) => {
+          done(null, tokens.access_token);
+        },
+      });
+
+      const message = {
+        subject: subject,
+        body: {
+          contentType: 'HTML',
+          content: content,
+        },
+        toRecipients: [
+          {
+            emailAddress: {
+              address: to,
+            },
+          },
+        ],
+        ccRecipients: cc ? cc.split(',').map((email: string) => ({ emailAddress: { address: email.trim() } })) : [],
+        bccRecipients: bcc ? bcc.split(',').map((email: string) => ({ emailAddress: { address: email.trim() } })) : [],
+      };
+
+      await client.api('/me/sendMail').post({ message });
+
+      console.log('Email sent successfully via Outlook');
+      return NextResponse.json({ success: true });
+    } else {
       return NextResponse.json({ error: 'Invalid provider or missing tokens' }, { status: 400 });
     }
   } catch (error) {

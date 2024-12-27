@@ -22,10 +22,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { to, cc, bcc, subject, content, provider } = body;
 
-    // if (!to || !subject || !content || !provider) {
-    //   return NextResponse.json({ error: 'Missing required fields: to, subject, content, or provider' }, { status: 400 });
-    // }
-
     if (tokensCookie) {
       const tokens = JSON.parse(tokensCookie.value);
       if (!tokens.access_token) {
@@ -34,7 +30,6 @@ export async function POST(req: NextRequest) {
 
       oauth2Client.setCredentials(tokens);
 
-      // Create email in RFC 2822 format
       const email = [
         'Content-Type: text/html; charset=utf-8',
         'MIME-Version: 1.0',
@@ -44,9 +39,10 @@ export async function POST(req: NextRequest) {
         `Subject: ${subject}`,
         '',
         content,
-      ].filter(Boolean).join('\r\n');
+      ]
+        .filter(Boolean)
+        .join('\r\n');
 
-      // Encode the email in Base64Url format
       const encodedEmail = Buffer.from(email)
         .toString('base64')
         .replace(/\+/g, '-')
@@ -77,23 +73,35 @@ export async function POST(req: NextRequest) {
       });
 
       const message = {
-        subject: subject,
-        body: {
-          contentType: 'HTML',
-          content: content,
-        },
-        toRecipients: [
-          {
-            emailAddress: {
-              address: to,
-            },
+        message: {
+          subject: subject,
+          body: {
+            contentType: 'HTML',
+            content: content,
           },
-        ],
-        ccRecipients: cc ? cc.split(',').map((email: string) => ({ emailAddress: { address: email.trim() } })) : [],
-        bccRecipients: bcc ? bcc.split(',').map((email: string) => ({ emailAddress: { address: email.trim() } })) : [],
+          toRecipients: [
+            {
+              emailAddress: {
+                address: to,
+              },
+            },
+          ],
+          ccRecipients: cc
+            ? cc.split(',').map((email: string) => ({
+                emailAddress: { address: email.trim() },
+              }))
+            : [],
+          bccRecipients: bcc
+            ? bcc.split(',').map((email: string) => ({
+                emailAddress: { address: email.trim() },
+              }))
+            : [],
+        },
+        saveToSentItems: false,
       };
+      console.log(message);
 
-      await client.api('/me/sendMail').post({ message });
+      await client.api('/me/sendMail').post(message);
 
       console.log('Email sent successfully via Outlook');
       return NextResponse.json({ success: true });

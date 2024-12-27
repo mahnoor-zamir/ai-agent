@@ -43,16 +43,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(messages);
     } else if (outlookTokensCookie) {
       const tokens = JSON.parse(outlookTokensCookie.value);
-
+      console.log('access token: ',tokens.access_token)
       const client = Client.init({
         authProvider: (done) => {
           done(null, tokens.access_token);
         },
       });
 
-      const response = await client.api('/me/messages').top(10).get();
+      const response = await client.api('/me/messages').get();
       const messages = response.value;
-
       console.log("Messages fetched from Outlook:", messages);
       return NextResponse.json(messages);
     } else {

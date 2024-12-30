@@ -83,7 +83,12 @@ export function ConversationsTable({ emails, source }: EmailDisplayProps) {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    let date;
+    if (source === 'gmail') {
+      date = new Date(parseInt(dateString));
+    } else {
+      date = new Date(dateString);
+    }
     return format(date, 'MMM d, yyyy h:mm a');
   };
 

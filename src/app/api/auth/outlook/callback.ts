@@ -12,6 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Authorization code is missing');
     }
 
+    
     const tokenResponse = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token', null, {
       params: {
         client_id: clientId,

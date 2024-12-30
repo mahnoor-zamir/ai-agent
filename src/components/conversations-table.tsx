@@ -89,6 +89,9 @@ export function ConversationsTable({ emails, source }: EmailDisplayProps) {
     } else {
       date = new Date(dateString);
     }
+    if (isNaN(date.getTime())) {
+      return 'Invalid Date';
+    }
     return format(date, 'MMM d, yyyy h:mm a');
   };
 

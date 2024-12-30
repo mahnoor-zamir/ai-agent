@@ -78,9 +78,9 @@ export default function ConversationsPage() {
           Outlook
         </Button>
       </div>
-      <ErrorBoundary fallback={<div>Something went wrong in the Conversations Table.</div>}>
-        <ConversationsTable emails={emails} source={source} />
-      </ErrorBoundary>
+        <ConversationsTable key={source} emails={emails} source={source} />
+      {/* <ErrorBoundary fallback={<div>Something went wrong in the Conversations Table.</div>}>
+      </ErrorBoundary> */}
     </div>
   );
 }

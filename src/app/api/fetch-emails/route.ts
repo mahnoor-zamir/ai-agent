@@ -9,7 +9,7 @@ const oauth2Client = new google.auth.OAuth2(
   `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/google/callback`
 );
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     console.log("Fetching emails...");
 
@@ -19,11 +19,13 @@ export async function GET(req: NextRequest) {
     console.log('Tokens cookie:', tokensCookie);
     console.log('Outlook tokens cookie:', outlookTokensCookie);
 
+    const { provider } = await req.json();
+
     if (!tokensCookie && !outlookTokensCookie) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    if (tokensCookie) {
+    if (provider === 'gmail' && tokensCookie) {
       const tokens = JSON.parse(tokensCookie.value);
       oauth2Client.setCredentials(tokens);
 
@@ -41,9 +43,9 @@ export async function GET(req: NextRequest) {
 
       console.log("Messages fetched from Gmail:", messages);
       return NextResponse.json(messages);
-    } else if (outlookTokensCookie) {
+    } else if (provider === 'outlook' && outlookTokensCookie) {
       const tokens = JSON.parse(outlookTokensCookie.value);
-      console.log('access token: ',tokens.access_token)
+      console.log('access token: ', tokens.access_token);
       const client = Client.init({
         authProvider: (done) => {
           done(null, tokens.access_token);

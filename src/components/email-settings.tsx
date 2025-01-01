@@ -32,6 +32,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDropzone } from "react-dropzone";
 // import Cookies from 'js-cookie'
 import { parse } from "cookie";
+import { deleteCookie } from '@/lib/delete-cookie';
+
 export function EmailSettings() {
   const [connectedEmail, setConnectedEmail] = useState<
     "gmail" | "outlook" | null
@@ -108,8 +110,10 @@ export function EmailSettings() {
 
   const handleConnectEmail = (provider: "gmail" | "outlook") => {
     if (provider === "gmail") {
+      handleDisconnectEmail("outlook");
       window.location.href = "/api/auth/google";
     } else if (provider === "outlook") {
+      handleDisconnectEmail("gmail");
       window.location.href = "/api/auth/outlook";
     }
   };
@@ -133,17 +137,16 @@ export function EmailSettings() {
 
   const handleDisconnectEmail = async (provider: "gmail" | "outlook") => {
     try {
-      const response = await fetch('/api/auth/disconnect', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ provider }),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to disconnect');
+      if (provider === "gmail") {
+        deleteCookie('tokens');
+        deleteCookie('isGmailConnected');
+        setConnectedEmail(null);
+      } else if (provider === "outlook") {
+        deleteCookie('outlookTokens');
+        deleteCookie('isOutlookConnected');
+        setConnectedEmail(null);
       }
+      checkStatus();
     } catch (error) {
       console.error('Error disconnecting email:', error);
     }

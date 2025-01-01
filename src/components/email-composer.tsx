@@ -70,7 +70,11 @@ export function EmailComposer({ isOpen, onClose, to, replyTo, subject, mode = 'n
 
 
   useEffect(() => {
-    if (mode === 'reply' || mode === 'replyAll') {
+    if (mode === 'new') {
+      setEmailSubject('')
+      setToField('')
+    }
+    else if (mode === 'reply' || mode === 'replyAll') {
       setEmailSubject(subject ? `Re: ${subject.replace(/^Re:\s*/i, '')}` : '')
       setToField(to || '')
     } else if (mode === 'forward') {

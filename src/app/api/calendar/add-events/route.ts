@@ -2,6 +2,7 @@
 import { google } from 'googleapis';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { find } from 'geo-tz';
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -22,7 +23,8 @@ export async function POST(req: NextRequest) {
     oauth2Client.setCredentials(tokens);
 
     const appointmentDetails = await req.json();
-    const { title, date, startTime, endTime, location, email, notes } = appointmentDetails;
+    console.log(appointmentDetails);
+    const { title, date, startTime, endTime, location, email, notes, latitude, longitude } = appointmentDetails;
 
     if (!title || !date || !startTime || !endTime) {
       return NextResponse.json(
@@ -42,17 +44,28 @@ export async function POST(req: NextRequest) {
     startDateTime.setHours(startHours, startMinutes, 0);
     endDateTime.setHours(endHours, endMinutes, 0);
 
+    // Get the user's time zone based on their location
+    let timeZone = 'UTC'; // Default time zone
+    if (latitude !== null && longitude !== null) {
+      console.log('Latitude:', latitude, 'Longitude:', longitude);
+      const timeZones = find(latitude, longitude);
+      if (timeZones.length > 0) {
+        timeZone = timeZones[0];
+      }
+    }
+    console.log('Time zone:', timeZone);
+
     const event = {
       summary: title,
       location: location || '',
       description: notes || '',
       start: {
         dateTime: startDateTime.toISOString(),
-        timeZone: 'Asia/Karachi', // Adjust based on your needs
+        timeZone: timeZone,
       },
       end: {
         dateTime: endDateTime.toISOString(),
-        timeZone: 'Asia/Karachi', // Adjust based on your needs
+        timeZone: timeZone,
       },
       attendees: email ? [{ email }] : [],
     };

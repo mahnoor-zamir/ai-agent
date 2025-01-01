@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     if (provider === 'gmail' && tokensCookie) {
       const tokens = JSON.parse(tokensCookie.value);
-      oauth2Client.setCredentials(tokens);
+      oauth2Client.setCredentials({access_token: tokens.access_token, refresh_token: tokens.refresh_token});
 
       const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
       const response = await gmail.users.messages.list({ userId: 'me', maxResults: 10 });

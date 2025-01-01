@@ -36,6 +36,8 @@ interface AppointmentDetails {
   location: string;
   email: string;
   notes: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export function CreateAppointmentModal({
@@ -52,6 +54,8 @@ export function CreateAppointmentModal({
       location: "",
       email: "",
       notes: "",
+      latitude: null,
+      longitude: null,
     });
 
   const handleInputChange = (
@@ -78,17 +82,39 @@ export function CreateAppointmentModal({
       return;
     }
 
-    onCreateAppointment(appointmentDetails);
-    setAppointmentDetails({
-      title: "",
-      date: undefined,
-      startTime: "",
-      endTime: "",
-      location: "",
-      email: "",
-      notes: "",
-    });
-    onClose();
+    // Get the user's current location
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setAppointmentDetails((prev) => ({
+          ...prev,
+          latitude,
+          longitude,
+        }));
+
+        onCreateAppointment({
+          ...appointmentDetails,
+          latitude,
+          longitude,
+        });
+        setAppointmentDetails({
+          title: "",
+          date: undefined,
+          startTime: "",
+          endTime: "",
+          location: "",
+          email: "",
+          notes: "",
+          latitude: null,
+          longitude: null,
+        });
+        onClose();
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        alert("Could not get your location. Please try again.");
+      }
+    );
   };
 
   return (

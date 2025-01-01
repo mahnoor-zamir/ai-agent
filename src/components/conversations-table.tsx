@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, Star, AlertCircle, MoreHorizontal, Mail, Reply, ReplyAll, Forward } from 'lucide-react';
+import { Search, Star, AlertCircle, MoreHorizontal, Mail, Reply, ReplyAll, Forward, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 
 import {
@@ -26,6 +26,12 @@ interface Email {
       name: string;
       value: string;
     }>;
+    parts?: Array<{
+      mimeType: string;
+      body: {
+        data: string;
+      };
+    }>;
   };
   internalDate?: string;
   createdDateTime?: string;
@@ -42,14 +48,23 @@ interface Email {
 
 interface EmailDisplayProps {
   emails: Email[];
-  source: 'gmail' | 'outlook';
+  source: 'gmail' | 'outlook' | null;
+  refetchEmails: () => void; // Add refetchEmails prop
 }
 
-export function ConversationsTable({ emails, source }: EmailDisplayProps) {
+export function ConversationsTable({ emails, source, refetchEmails }: EmailDisplayProps) {
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [emailMode, setEmailMode] = useState<'new' | 'reply' | 'replyAll' | 'forward'>('new');
+
+  if (!source) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-muted-foreground">
+        Connect to a provider to view emails
+      </div>
+    );
+  }
 
   const getSender = (email: Email) => {
     if (source === 'gmail' && email.payload) {
@@ -95,6 +110,22 @@ export function ConversationsTable({ emails, source }: EmailDisplayProps) {
     return format(date, 'MMM d, yyyy h:mm a');
   };
 
+  const getEmailBody = (email: Email) => {
+    if (source === 'gmail' && email.payload) {
+      const bodyPart = email.payload.parts?.find(part => part.mimeType === 'text/html' || part.mimeType === 'text/plain');
+      if (bodyPart && bodyPart.body && bodyPart.body.data) {
+        const decodedBody = atob(bodyPart.body.data.replace(/-/g, '+').replace(/_/g, '/'));
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(decodedBody, 'text/html');
+        return doc.body.innerHTML;
+      }
+      return 'No Content';
+    } else if (source === 'outlook' && email.bodyPreview) {
+      return email.bodyPreview;
+    }
+    return 'No Content';
+  };
+
   const handleNewEmail = () => {
     setEmailMode('new');
     setIsComposerOpen(true);
@@ -118,9 +149,14 @@ export function ConversationsTable({ emails, source }: EmailDisplayProps) {
       {/* Email List Sidebar */}
       <div className="w-80 border-r flex flex-col">
         <div className="p-4 border-b space-y-4">
-          <Button className="w-full" onClick={handleNewEmail}>
-            <Mail className="mr-2 h-4 w-4" /> Compose
-          </Button>
+          <div className="flex justify-between items-center">
+            <Button className="w-full" onClick={handleNewEmail}>
+              <Mail className="mr-2 h-4 w-4" /> Compose
+            </Button>
+            <Button variant="outline" size="icon" onClick={refetchEmails}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
           <div className="relative">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -209,7 +245,7 @@ export function ConversationsTable({ emails, source }: EmailDisplayProps) {
             </div>
             <ScrollArea className="flex-1 p-4">
               <div className="prose max-w-none">
-                {selectedEmail.snippet || selectedEmail.bodyPreview}
+                {getEmailBody(selectedEmail)}
               </div>
             </ScrollArea>
           </>

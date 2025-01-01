@@ -12,7 +12,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Authorization code is missing');
     }
 
-    
     const tokenResponse = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token', null, {
       params: {
         client_id: clientId,
@@ -29,8 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Securely store tokens in cookies
     res.setHeader('Set-Cookie', [
-      `outlookTokens=${encodeURIComponent(JSON.stringify(tokens))}; Path=/;Secure; SameSite=Strict`,
-      `isOutlookConnected=true; Path=/; HttpOnly; Secure; SameSite=Strict`,
+      `outlookTokens=${encodeURIComponent(JSON.stringify(tokens))}; Path=/; Secure; SameSite=Strict`,
+      `isOutlookConnected=true; Path=/; Secure; SameSite=Strict`,
     ]);
     res.redirect('/settings');
   } catch (error) {

@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Securely store tokens in cookies
     res.setHeader('Set-Cookie', [
-      `outlookTokens=${encodeURIComponent(JSON.stringify(tokens))}; Path=/; HttpOnly; Secure; SameSite=Strict`,
+      `outlookTokens=${encodeURIComponent(JSON.stringify(tokens))}; Path=/;Secure; SameSite=Strict`,
       `isOutlookConnected=true; Path=/; HttpOnly; Secure; SameSite=Strict`,
     ]);
     res.redirect('/settings');

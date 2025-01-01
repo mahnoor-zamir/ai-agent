@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback,useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, X, FileUp, Smile } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useDropzone } from 'react-dropzone'
-
+// import Cookies from 'js-cookie'
+import { parse } from 'cookie';
 export function EmailSettings() {
   const [connectedEmail, setConnectedEmail] = useState<"gmail" | "outlook" | null>(null)
   const [initialReply, setInitialReply] = useState("")
@@ -39,6 +40,25 @@ export function EmailSettings() {
   const [answers, setAnswers] = useState<string[]>([''])
   const [instructions, setInstructions] = useState('')
 
+  const [isGmailConnected, setIsGmailConnected] = useState(false);
+  const [isOutlookConnected, setIsOutlookConnected] = useState(false);
+
+  useEffect(() => {
+    // Get cookies
+    const cookies = parse(document.cookie || '');
+    const gmailConnectedCookie = cookies.isGmailConnected;
+    const gmailTokenCookie = cookies.tokens ? JSON.parse(decodeURIComponent(cookies.tokens)) : null;
+    const outlookTokenCookie = cookies.outlookTokens ? JSON.parse(decodeURIComponent(cookies.outlookTokens)) : null;
+
+    console.log('Gmail Connected Cookie:', gmailConnectedCookie);
+    console.log('Gmail Token:', gmailTokenCookie);
+    console.log('Outlook Token:', outlookTokenCookie);
+
+    setIsGmailConnected(!!gmailTokenCookie);
+    setIsOutlookConnected(!!outlookTokenCookie);
+  }, []);
+
+ 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setDocuments(prev => [...prev, ...acceptedFiles])
   }, [])
@@ -390,7 +410,7 @@ export function EmailSettings() {
                       <h3 className="font-medium">Gmail</h3>
                       <p className="text-sm text-muted-foreground">Connect your Gmail account</p>
                     </div>
-                    {connectedEmail === "gmail" ? (
+                    {isGmailConnected ? (
                       <Badge variant="secondary" className="bg-green-100 text-green-800">Connected</Badge>
                     ) : (
                       <div className="space-x-2">
@@ -404,7 +424,7 @@ export function EmailSettings() {
                       <h3 className="font-medium">Outlook</h3>
                       <p className="text-sm text-muted-foreground">Connect your Outlook account</p>
                     </div>
-                    {connectedEmail === "outlook" ? (
+                    {isOutlookConnected ? (
                       <Badge variant="secondary" className="bg-green-100 text-green-800">Connected</Badge>
                     ) : (
                       <div className="space-x-2">

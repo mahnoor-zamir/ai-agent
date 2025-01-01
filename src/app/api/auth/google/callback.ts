@@ -23,9 +23,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('Tokens obtained successfully');
 
     // Securely store tokens in cookies
+    // res.setHeader('Set-Cookie', [
+    //   `tokens=${encodeURIComponent(JSON.stringify(tokens))}; Path=/;Secure; SameSite=Strict`,
+    //   `isGmailConnected=true; Path=/;  Secure; SameSite=Strict`,
+    // ]);
     res.setHeader('Set-Cookie', [
-      `tokens=${encodeURIComponent(JSON.stringify(tokens))}; Path=/; HttpOnly; Secure; SameSite=Strict`,
-      `isGmailConnected=true; Path=/; HttpOnly; Secure; SameSite=Strict`,
+      `tokens=${encodeURIComponent(JSON.stringify(tokens))}; Path=/; Secure; SameSite=Strict`,
+      `isGmailConnected=true; Path=/; Secure; SameSite=Strict`,
     ]);
 
     // Redirect to settings or another page

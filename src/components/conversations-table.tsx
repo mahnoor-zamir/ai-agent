@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Search, Star, AlertCircle, MoreHorizontal, Mail, Reply, ReplyAll, Forward, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+import { Search, Star, AlertCircle, MoreHorizontal, Mail, Reply, ReplyAll, Forward, RefreshCw, Paperclip, Archive, Trash2, AlertTriangle, Tag} from 'lucide-react';
 import { format } from 'date-fns';
+import DOMPurify from 'dompurify';
+import { decode } from 'html-entities';
 
 import {
   DropdownMenu,
@@ -16,6 +18,24 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { EmailComposer } from "@/components/email-composer";
 
+interface EmailPart {
+  mimeType: string;
+  filename?: string;
+  body: {
+    data?: string;
+    attachmentId?: string;
+    size?: number;
+  };
+  parts?: EmailPart[];
+}
+
+interface Attachment {
+  filename: string;
+  mimeType: string;
+  size: number;
+  attachmentId: string;
+}
+
 interface Email {
   id: string;
   threadId?: string;
@@ -26,12 +46,7 @@ interface Email {
       name: string;
       value: string;
     }>;
-    parts?: Array<{
-      mimeType: string;
-      body: {
-        data: string;
-      };
-    }>;
+    parts?: EmailPart[];
   };
   internalDate?: string;
   createdDateTime?: string;
@@ -49,7 +64,7 @@ interface Email {
 interface EmailDisplayProps {
   emails: Email[];
   source: 'gmail' | 'outlook' | null;
-  refetchEmails: () => void; // Add refetchEmails prop
+  refetchEmails: () => void;
 }
 
 export function ConversationsTable({ emails, source, refetchEmails }: EmailDisplayProps) {
@@ -58,14 +73,94 @@ export function ConversationsTable({ emails, source, refetchEmails }: EmailDispl
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [emailMode, setEmailMode] = useState<'new' | 'reply' | 'replyAll' | 'forward'>('new');
 
-  if (!source) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-muted-foreground">
-        Connect to a provider to view emails
-      </div>
-    );
-  }
+  const parseGmailContent = (email: Email) => {
+    const parts = email.payload?.parts || [];
+    let htmlContent = '';
+    let textContent = '';
+    const attachments: Attachment[] = [];
 
+    const processPart = (part: EmailPart) => {
+      if (!part.mimeType) return;
+      if (part.mimeType === 'text/html' && part.body.data) {
+        htmlContent = decodeEmailContent(part.body.data);
+      } else if (part.mimeType === 'text/plain' && part.body.data) {
+        textContent = decodeEmailContent(part.body.data);
+      } else if (part.body.attachmentId) {
+        attachments.push({
+          filename: part.filename || 'unnamed',
+          mimeType: part.mimeType,
+          size: part.body.size || 0,
+          attachmentId: part.body.attachmentId
+        });
+      }
+    };
+
+    const processMultipart = (parts: EmailPart[]) => {
+      parts.forEach(part => {
+        if (part.mimeType?.startsWith('multipart/')) {
+          if (part.parts) processMultipart(part.parts);
+        } else {
+          processPart(part);
+        }
+      });
+    };
+
+    processMultipart(parts);
+    return {
+      html: sanitizeHtml(htmlContent || textContent),
+      text: textContent,
+      attachments
+    };
+  };
+
+  const parseOutlookContent = (email: Email) => {
+    return {
+      html: sanitizeHtml(email.bodyPreview || ''),
+      text: email.bodyPreview || '',
+      attachments: []
+    };
+  };
+
+  const getEmailContent = (email: Email) => {
+    if (source === 'gmail') {
+      return parseGmailContent(email);
+    } else if (source === 'outlook') {
+      return parseOutlookContent(email);
+    }
+    return { html: '', text: '', attachments: [] };
+  };
+
+  const decodeEmailContent = (encoded: string): string => {
+    try {
+      const decoded = atob(encoded.replace(/-/g, '+').replace(/_/g, '/'));
+      return decode(decoded);
+    } catch (error) {
+      console.error('Error decoding email content:', error);
+      return '';
+    }
+  };
+
+  const sanitizeHtml = (html: string): string => {
+    const sanitized = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'div', 'span', 'a', 'img', 'ul', 'ol', 'li',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote',
+        'b', 'i', 'strong', 'em', 'strike', 'code', 'pre',
+        'table', 'thead', 'tbody', 'tr', 'td', 'th'
+      ],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'target'],
+      ALLOW_DATA_ATTR: false,
+      ADD_TAGS: ['iframe'],
+      ADD_ATTR: ['frameborder', 'allowfullscreen']
+    });
+    return `
+      <div class="email-content">
+        ${sanitized}
+      </div>
+    `;
+  };
+
+  // Rest of the helper functions remain the same
   const getSender = (email: Email) => {
     if (source === 'gmail' && email.payload) {
       const from = email.payload.headers.find(h => h.name.toLowerCase() === 'from');
@@ -110,21 +205,13 @@ export function ConversationsTable({ emails, source, refetchEmails }: EmailDispl
     return format(date, 'MMM d, yyyy h:mm a');
   };
 
-  const getEmailBody = (email: Email) => {
-    if (source === 'gmail' && email.payload) {
-      const bodyPart = email.payload.parts?.find(part => part.mimeType === 'text/html' || part.mimeType === 'text/plain');
-      if (bodyPart && bodyPart.body && bodyPart.body.data) {
-        const decodedBody = atob(bodyPart.body.data.replace(/-/g, '+').replace(/_/g, '/'));
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(decodedBody, 'text/html');
-        return doc.body.innerHTML;
-      }
-      return 'No Content';
-    } else if (source === 'outlook' && email.bodyPreview) {
-      return email.bodyPreview;
-    }
-    return 'No Content';
-  };
+  if (!source) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-muted-foreground">
+        Connect to a provider to view emails
+      </div>
+    );
+  }
 
   const handleNewEmail = () => {
     setEmailMode('new');
@@ -146,7 +233,6 @@ export function ConversationsTable({ emails, source, refetchEmails }: EmailDispl
 
   return (
     <div className="flex h-[calc(100vh-8rem)] bg-background rounded-lg border">
-      {/* Email List Sidebar */}
       <div className="w-80 border-r flex flex-col">
         <div className="p-4 border-b space-y-4">
           <div className="flex justify-between items-center">
@@ -200,14 +286,13 @@ export function ConversationsTable({ emails, source, refetchEmails }: EmailDispl
         </ScrollArea>
       </div>
 
-      {/* Email Content Panel */}
       <div className="flex-1 flex flex-col">
         {selectedEmail ? (
           <>
             <div className="p-4 border-b">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold">{getSubject(selectedEmail)}</h2>
-                <div className="flex gap-2">
+                {/* <div className="flex gap-2">
                   <Button variant="ghost" size="sm" onClick={() => handleEmailAction('reply')}>
                     <Reply className="mr-2 h-4 w-4" /> Reply
                   </Button>
@@ -232,6 +317,45 @@ export function ConversationsTable({ emails, source, refetchEmails }: EmailDispl
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                </div> */}
+                <div className="flex gap-2">
+
+                  <Button variant="ghost" size="sm" onClick={() => handleEmailAction('reply')}>
+                    <Reply className="mr-2 h-4 w-4" /> Reply
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleEmailAction('replyAll')}>
+                    <ReplyAll className="mr-2 h-4 w-4" /> Reply All
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleEmailAction('forward')}>
+                    <Forward className="mr-2 h-4 w-4" /> Forward
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <Star className="mr-2 h-4 w-4" /> Star
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <AlertCircle className="mr-2 h-4 w-4" /> Mark as important
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Archive className="h-4 w-4" /> Archive
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <AlertTriangle className="h-4 w-4" /> Mark as spam
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Trash2 className="h-4 w-4" /> Delete
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Tag className="h-4 w-4" /> Label
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
               <div className="flex justify-between items-center">
@@ -244,9 +368,34 @@ export function ConversationsTable({ emails, source, refetchEmails }: EmailDispl
               </div>
             </div>
             <ScrollArea className="flex-1 p-4">
-              <div className="prose max-w-none">
-                {getEmailBody(selectedEmail)}
-              </div>
+              {(() => {
+                const { html, attachments } = getEmailContent(selectedEmail);
+                return (
+                  <div>
+                    {attachments.length > 0 && (
+                      <div className="mb-4 p-4 border rounded-lg">
+                        <h3 className="font-medium mb-2 flex items-center">
+                          <Paperclip className="mr-2 h-4 w-4" /> Attachments
+                        </h3>
+                        <div className="space-y-2">
+                          {attachments.map((attachment) => (
+                            <div key={attachment.attachmentId} className="flex items-center">
+                              <span className="text-sm">{attachment.filename}</span>
+                              <span className="text-xs text-muted-foreground ml-2">
+                                ({Math.round(attachment.size / 1024)}KB)
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div
+                      className="prose max-w-none"
+                      dangerouslySetInnerHTML={{ __html: html }}
+                    />
+                  </div>
+                );
+              })()}
             </ScrollArea>
           </>
         ) : (
@@ -263,7 +412,7 @@ export function ConversationsTable({ emails, source, refetchEmails }: EmailDispl
         replyTo={selectedEmail ? getSenderEmail(selectedEmail) : ''}
         subject={selectedEmail ? getSubject(selectedEmail) : ''}
         mode={emailMode}
-        thread={[]} // Note: You'll need to implement thread handling based on your needs
+        thread={[]}
       />
     </div>
   );
